@@ -223,6 +223,43 @@ final class LibraryCoordinator {
         }
     }
 
+    // MARK: - Рекомендации
+
+    /// Полки рекомендаций: их показывают и «Главная», и «Новое и рекомендации».
+    /// Держим в одном месте, чтобы при каждом переключении раздела не ходить в TMDB заново.
+    private(set) var shelves: [Recommender.Shelf] = []
+    private(set) var isLoadingShelves = false
+    private(set) var shelvesError: String?
+    private var shelvesLoadedAt: Date?
+
+    /// Час — разумный срок: подборки TMDB меняются медленно, а история просмотров
+    /// за сеанс может измениться, поэтому force обновляет немедленно.
+    private static let shelvesLifetime: TimeInterval = 3600
+
+    func loadShelves(force: Bool = false) async {
+        if !force, !shelves.isEmpty, let loadedAt = shelvesLoadedAt,
+           Date().timeIntervalSince(loadedAt) < Self.shelvesLifetime {
+            return
+        }
+        guard !isLoadingShelves else { return }
+        isLoadingShelves = true
+        defer { isLoadingShelves = false }
+
+        guard await client.hasKey else {
+            shelvesError = String(localized: "Не задан API-ключ TMDB. Откройте Настройки (⌘,) и добавьте ключ.")
+            return
+        }
+        let taste = Recommender.taste(entries: store.entries, watch: store.watch)
+        let result = await Recommender(client: client).shelves(taste: taste)
+        if result.isEmpty {
+            shelvesError = String(localized: "TMDB не вернул подборок. Проверьте соединение и попробуйте ещё раз.")
+        } else {
+            shelves = result
+            shelvesError = nil
+            shelvesLoadedAt = Date()
+        }
+    }
+
     /// Глобальный поиск по всему каталогу TMDB — строка в правом верхнем углу.
     /// Ошибку возвращаем вызывающему, а не через общий алерт: при поиске по мере
     /// набора модальное окно на каждый сетевой сбой было бы невыносимо.

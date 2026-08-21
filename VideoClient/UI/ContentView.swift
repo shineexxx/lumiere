@@ -209,7 +209,9 @@ struct ContentView: View {
                 selection = entry.id
             }
         } else if let selection, let entry = store.entry(id: selection) {
-            DetailView(entry: entry, onBack: { self.selection = nil })
+            DetailView(entry: entry,
+                       onBack: { self.selection = nil },
+                       onOpenEntry: { self.selection = $0.id })
                 .id(entry.id)
         } else if filter == .home {
             HomeView(onSelect: { selection = $0.id },

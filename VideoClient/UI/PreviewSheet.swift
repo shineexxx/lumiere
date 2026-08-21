@@ -13,6 +13,8 @@ struct PreviewSheet: View {
     @State private var details: MediaEntry?
     @State private var isLoading = true
     @State private var isAdding = false
+    /// Открытая страница актёра.
+    @State private var selectedPerson: Person?
 
     /// Карточка может уже быть в библиотеке — тогда предлагаем её открыть.
     private var existing: MediaEntry? {
@@ -47,6 +49,14 @@ struct PreviewSheet: View {
         }
         .frame(width: 680, height: 620)
         .task { await loadDetails() }
+        .sheet(item: $selectedPerson) { person in
+            PersonSheet(person: person) { entry in
+                dismiss()
+                onOpenInLibrary(entry)
+            }
+            .environment(store)
+            .environment(coordinator)
+        }
     }
 
     private var hero: some View {
@@ -115,7 +125,10 @@ struct PreviewSheet: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: 14) {
                     ForEach(cast) { person in
-                        VStack(spacing: 5) {
+                        Button {
+                            selectedPerson = person
+                        } label: {
+                            VStack(spacing: 5) {
                             CachedImage(url: TMDB.imageURL(path: person.profilePath, size: .profile)) {
                                 PosterPlaceholder(symbol: "person.fill")
                             }
@@ -127,8 +140,11 @@ struct PreviewSheet: View {
                             if let role = person.role, !role.isEmpty {
                                 Text(role).font(.system(size: 9)).foregroundStyle(.secondary).lineLimit(1)
                             }
+                            }
+                            .frame(width: 78)
                         }
-                        .frame(width: 78)
+                        .buttonStyle(.plain)
+                        .help(String(localized: "Открыть страницу актёра"))
                     }
                 }
             }

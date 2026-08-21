@@ -3,12 +3,16 @@ import SwiftUI
 struct DetailView: View {
     let entry: MediaEntry
     let onBack: () -> Void
+    /// Переход к другой карточке — из фильмографии актёра.
+    var onOpenEntry: (MediaEntry) -> Void = { _ in }
 
     @Environment(LibraryStore.self) private var store
     @Environment(PlaybackSession.self) private var session
     @Environment(LibraryCoordinator.self) private var coordinator
 
     @State private var selectedSeason: Int?
+    /// Открытая страница актёра.
+    @State private var selectedPerson: Person?
 
     private var live: MediaEntry { store.entry(id: entry.id) ?? entry }
 
@@ -30,6 +34,11 @@ struct DetailView: View {
                 }
                 .padding(28)
             }
+        }
+        .sheet(item: $selectedPerson) { person in
+            PersonSheet(person: person, onOpenInLibrary: onOpenEntry)
+            .environment(store)
+            .environment(coordinator)
         }
         .scrollContentBackground(.hidden)
         .background { backdrop }
@@ -261,7 +270,10 @@ struct DetailView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: 16) {
                     ForEach(live.cast) { person in
-                        VStack(spacing: 6) {
+                        Button {
+                            selectedPerson = person
+                        } label: {
+                            VStack(spacing: 6) {
                             CachedImage(url: TMDB.imageURL(path: person.profilePath, size: .profile)) {
                                 PosterPlaceholder(symbol: "person.fill")
                             }
@@ -276,8 +288,11 @@ struct DetailView: View {
                                     .foregroundStyle(.secondary)
                                     .lineLimit(1)
                             }
+                            }
+                            .frame(width: 92)
                         }
-                        .frame(width: 92)
+                        .buttonStyle(.plain)
+                        .help(String(localized: "Открыть страницу актёра"))
                     }
                 }
                 .padding(.vertical, 2)

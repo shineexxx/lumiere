@@ -6,10 +6,11 @@ struct DiscoverView: View {
     @Environment(LibraryCoordinator.self) private var coordinator
     let onSelect: (MediaEntry) -> Void
 
-    @State private var shelves: [Recommender.Shelf] = []
-    @State private var isLoading = false
-    @State private var loadError: String?
     @State private var preview: MatchCandidate?
+
+    private var shelves: [Recommender.Shelf] { coordinator.shelves }
+    private var isLoading: Bool { coordinator.isLoadingShelves }
+    private var loadError: String? { coordinator.shelvesError }
 
     var body: some View {
         ScrollView {
@@ -30,7 +31,7 @@ struct DiscoverView: View {
         }
         .scrollContentBackground(.hidden)
         .background { Rectangle().fill(.background).ignoresSafeArea() }
-        .task { await loadIfNeeded() }
+        .task { await coordinator.loadShelves() }
         .sheet(item: $preview) { candidate in
             PreviewSheet(candidate: candidate, onOpenInLibrary: onSelect)
                 .environment(store)
@@ -49,7 +50,7 @@ struct DiscoverView: View {
             }
             Spacer()
             Button {
-                Task { await load(force: true) }
+                Task { await coordinator.loadShelves(force: true) }
             } label: {
                 Label("Обновить", systemImage: "arrow.clockwise")
             }
@@ -75,34 +76,12 @@ struct DiscoverView: View {
             Text(message)
                 .font(.callout).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center).frame(maxWidth: 420)
-            Button("Повторить") { Task { await load(force: true) } }
+            Button("Повторить") { Task { await coordinator.loadShelves(force: true) } }
                 .buttonStyle(.glassProminent)
         }
         .frame(maxWidth: .infinity, minHeight: 260)
     }
 
-    private func loadIfNeeded() async {
-        guard shelves.isEmpty else { return }
-        await load(force: false)
-    }
-
-    private func load(force: Bool) async {
-        guard !isLoading else { return }
-        isLoading = true
-        loadError = nil
-        defer { isLoading = false }
-
-        guard await coordinator.client.hasKey else {
-            loadError = String(localized: "Не задан API-ключ TMDB. Откройте Настройки (⌘,) и добавьте ключ.")
-            return
-        }
-        let taste = Recommender.taste(entries: store.entries, watch: store.watch)
-        let result = await Recommender(client: coordinator.client).shelves(taste: taste)
-        shelves = result
-        if result.isEmpty {
-            loadError = String(localized: "TMDB не вернул подборок. Проверьте соединение и попробуйте ещё раз.")
-        }
-    }
 }
 
 /// Одна горизонтальная полка подборки.

@@ -4,10 +4,14 @@ import SwiftUI
 struct HomeView: View {
     @Environment(LibraryStore.self) private var store
     @Environment(PlaybackSession.self) private var session
+    @Environment(LibraryCoordinator.self) private var coordinator
     let onSelect: (MediaEntry) -> Void
     let onOpenFilter: (LibraryFilter) -> Void
 
     private let columns = [GridItem(.adaptive(minimum: 150, maximum: 200), spacing: 22)]
+
+    /// Открытая карточка с TMDB — та, которой ещё нет в библиотеке.
+    @State private var preview: MatchCandidate?
 
     var body: some View {
         ScrollView {
@@ -26,6 +30,9 @@ struct HomeView: View {
                 if !unfinishedShows.isEmpty {
                     section(String(localized: "Сериалы в процессе"), filter: .shows, entries: unfinishedShows)
                 }
+                // Рекомендации с TMDB: те же полки, что в разделе «Новое»,
+                // но здесь показываем только первые две, чтобы главная не разрасталась.
+                recommendations
                 if store.entries.isEmpty {
                     emptyHint
                 }
@@ -34,6 +41,43 @@ struct HomeView: View {
         }
         .scrollContentBackground(.hidden)
         .background { LibraryBackdrop(entries: Array(store.entries.prefix(1))) }
+        .task { await coordinator.loadShelves() }
+        .sheet(item: $preview) { candidate in
+            PreviewSheet(candidate: candidate, onOpenInLibrary: onSelect)
+                .environment(store)
+                .environment(coordinator)
+        }
+    }
+
+    // MARK: - Рекомендации
+
+    @ViewBuilder
+    private var recommendations: some View {
+        let shelves = coordinator.shelves.prefix(2)
+        if !shelves.isEmpty {
+            VStack(alignment: .leading, spacing: 26) {
+                ForEach(shelves) { shelf in
+                    VStack(alignment: .leading, spacing: 14) {
+                        sectionHeader(shelf.title, filter: .discover, subtitle: shelf.subtitle)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(alignment: .top, spacing: 16) {
+                                ForEach(shelf.items) { item in
+                                    DiscoverCard(candidate: item,
+                                                 onSelect: onSelect,
+                                                 onPreview: { preview = $0 })
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
+                }
+            }
+        } else if coordinator.isLoadingShelves {
+            HStack(spacing: 8) {
+                ProgressView().controlSize(.small)
+                Text("Собираю подборки…").font(.callout).foregroundStyle(.secondary)
+            }
+        }
     }
 
     private var greeting: some View {
@@ -98,9 +142,16 @@ struct HomeView: View {
         }
     }
 
-    private func sectionHeader(_ title: String, filter: LibraryFilter) -> some View {
+    private func sectionHeader(_ title: String,
+                               filter: LibraryFilter,
+                               subtitle: String? = nil) -> some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(title).font(.system(size: 20, weight: .semibold))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.system(size: 20, weight: .semibold))
+                if let subtitle {
+                    Text(subtitle).font(.system(size: 12)).foregroundStyle(.secondary)
+                }
+            }
             Spacer()
             Button {
                 onOpenFilter(filter)

@@ -22,7 +22,8 @@ struct TMDBSettings: View {
     @Environment(LibraryCoordinator.self) private var coordinator
 
     @State private var key = TMDBKeyStore.key ?? ""
-    @State private var language = UserDefaults.standard.string(forKey: "tmdbLanguage") ?? "ru-RU"
+    /// nil — «как в приложении»; иначе явно выбранный язык метаданных.
+    @State private var language: String? = MetadataLanguage.stored
     @State private var checkState: CheckState = .idle
 
     enum CheckState: Equatable {
@@ -69,16 +70,25 @@ struct TMDBSettings: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
 
-            Section("Язык метаданных") {
+            Section {
                 Picker("Язык", selection: $language) {
-                    Text("Русский").tag("ru-RU")
-                    Text("English").tag("en-US")
-                    Text("Українська").tag("uk-UA")
+                    Text("Как в приложении").tag(String?.none)
+                    Divider()
+                    ForEach(MetadataLanguage.options, id: \.self) { code in
+                        Text(MetadataLanguage.title(for: code)).tag(String?.some(code))
+                    }
                 }
                 .onChange(of: language) { _, value in
-                    UserDefaults.standard.set(value, forKey: "tmdbLanguage")
-                    Task { await coordinator.client.setLanguage(value) }
+                    MetadataLanguage.stored = value
+                    Task { await coordinator.client.setLanguage(MetadataLanguage.effective) }
                 }
+            } header: {
+                Text("Язык метаданных")
+            } footer: {
+                Text(language == nil
+                     ? "Сейчас: \(MetadataLanguage.title(for: MetadataLanguage.automatic)) — как язык приложения. Смените язык приложения, и описания сменятся вместе с ним."
+                     : "Выбран явно и не будет меняться вместе с языком приложения.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
 
             Section {

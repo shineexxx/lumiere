@@ -244,6 +244,9 @@ nonisolated enum Plural {
     static let resultsForms = Forms(one: "результат", few: "результата", many: "результатов",
                                englishOne: "result", englishMany: "results")
 
+    static let rolesForms = Forms(one: "роль", few: "роли", many: "ролей",
+                                  englishOne: "role", englishMany: "roles")
+
     /// Язык, на котором приложение сейчас говорит с пользователем.
     static var isRussian: Bool {
         Bundle.main.preferredLocalizations.first?.hasPrefix("ru") ?? true

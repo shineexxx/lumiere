@@ -26,7 +26,7 @@ actor TMDBClient {
     private var key: String?
     private var language: String
 
-    init(key: String? = TMDBKeyStore.key, language: String = "ru-RU") {
+    init(key: String? = TMDBKeyStore.key, language: String = MetadataLanguage.effective) {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 20
         config.requestCachePolicy = .returnCacheDataElseLoad
@@ -97,6 +97,18 @@ actor TMDBClient {
 
     func season(showID: Int, season: Int) async throws -> TMDB.SeasonDetail {
         try await get("/tv/\(showID)/season/\(season)")
+    }
+
+    // MARK: - Актёры
+
+    func personDetail(id: Int) async throws -> TMDB.PersonDetail {
+        try await get("/person/\(id)")
+    }
+
+    /// Фильмография: и кино, и сериалы одним списком, как отдаёт TMDB.
+    func personCredits(id: Int) async throws -> [TMDB.MultiResult] {
+        let credits: TMDB.PersonCredits = try await get("/person/\(id)/combined_credits")
+        return credits.cast
     }
 
     // MARK: - Подборки и рекомендации

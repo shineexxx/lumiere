@@ -52,6 +52,27 @@ nonisolated enum TMDB {
         var release_date: String?
         var first_air_date: String?
         var vote_average: Double?
+        /// Есть только в фильмографии актёра: кого он играл.
+        var character: String?
+        var popularity: Double?
+        var genre_ids: [Int]?
+    }
+
+    /// Страница актёра: /person/{id}
+    struct PersonDetail: Decodable {
+        var id: Int
+        var name: String
+        var biography: String?
+        var birthday: String?
+        var deathday: String?
+        var place_of_birth: String?
+        var profile_path: String?
+        var known_for_department: String?
+    }
+
+    /// Фильмография: /person/{id}/combined_credits
+    struct PersonCredits: Decodable {
+        var cast: [MultiResult] = []
     }
 
     struct Genre: Decodable, Hashable { var id: Int; var name: String }
@@ -214,5 +235,34 @@ nonisolated struct MatchCandidate: Identifiable, Hashable {
         overview = show.overview
         posterPath = show.poster_path
         rating = show.vote_average
+    }
+}
+
+extension MatchCandidate {
+    /// Фильмография актёра: один и тот же сериал TMDB присылает отдельной строкой
+    /// на каждую роль, поэтому схлопываем по идентификатору и показываем сначала
+    /// то, что смотрят чаще.
+    nonisolated static func filmography(from raw: [TMDB.MultiResult]) -> [MatchCandidate] {
+        var seen = Set<String>()
+        var weighted: [(candidate: MatchCandidate, weight: Double)] = []
+        for item in raw {
+            guard !Self.isGuestAppearance(item) else { continue }
+            guard let candidate = MatchCandidate(multi: item) else { continue }
+            guard seen.insert("\(candidate.kind.rawValue)|\(candidate.id)").inserted else { continue }
+            weighted.append((candidate, item.popularity ?? 0))
+        }
+        return weighted.sorted { $0.weight > $1.weight }.map(\.candidate)
+    }
+
+    /// Приход в ток-шоу «в роли себя» — формально тоже роль, но в фильмографии
+    /// от неё один вред: у вечерних шоу популярность огромная, и они вытесняют
+    /// наверх все настоящие работы актёра.
+    private nonisolated static func isGuestAppearance(_ item: TMDB.MultiResult) -> Bool {
+        // 10767 — ток-шоу, 10763 — новости, 10764 — реалити.
+        let chatty: Set<Int> = [10767, 10763, 10764]
+        if let genres = item.genre_ids, !chatty.isDisjoint(with: genres) { return true }
+        guard let character = item.character?.lowercased() else { return false }
+        return character.hasPrefix("self") || character.hasPrefix("сам")
+            || character.contains("himself") || character.contains("herself")
     }
 }

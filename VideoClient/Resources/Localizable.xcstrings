@@ -1,6 +1,7 @@
 {
   "sourceLanguage": "ru",
   "strings": {
+    "": {},
     ".%@": {
       "extractionState": "manual",
       "localizations": {
@@ -116,6 +117,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@: файл не найден"
+          }
+        }
+      }
+    },
+    "%1$lld сезон, %2$lld серия": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "season %1$lld, episode %2$lld"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld сезон, %2$lld серия"
+          }
+        }
+      }
+    },
+    "%1$lld ч %2$lld мин": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld h %2$lld min"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld ч %2$lld мин"
           }
         }
       }
@@ -1347,6 +1382,22 @@
         }
       }
     },
+    "В этой карточке: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In this card: %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В этой карточке: %@"
+          }
+        }
+      }
+    },
     "Вам может понравиться": {
       "extractionState": "manual",
       "localizations": {
@@ -1734,6 +1785,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Выберите папку с фильмами или сериалами"
+          }
+        }
+      }
+    },
+    "Выбран явно и не будет меняться вместе с языком приложения.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chosen explicitly — it will not follow the app language."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбран явно и не будет меняться вместе с языком приложения."
           }
         }
       }
@@ -2469,6 +2536,22 @@
         }
       }
     },
+    "Загружаю фильмографию…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading the filmography…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загружаю фильмографию…"
+          }
+        }
+      }
+    },
     "Загрузка…": {
       "extractionState": "manual",
       "localizations": {
@@ -2802,6 +2885,23 @@
         }
       }
     },
+    "Ищу в TMDB: %1$@ (%2$lld/%3$lld)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Searching TMDB: %1$@ (%2$lld/%3$lld)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ищу в TMDB: %1$@ (%2$lld/%3$lld)"
+          }
+        }
+      }
+    },
     "К библиотеке": {
       "extractionState": "manual",
       "localizations": {
@@ -2832,6 +2932,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Как в источнике"
+          }
+        }
+      }
+    },
+    "Как в приложении": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Match the app"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Как в приложении"
           }
         }
       }
@@ -3968,6 +4084,23 @@
         }
       }
     },
+    "Остановились на %1$@ из %2$@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped at %1$@ of %2$@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Остановились на %1$@ из %2$@"
+          }
+        }
+      }
+    },
     "Открыть": {
       "extractionState": "manual",
       "localizations": {
@@ -4049,6 +4182,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Открыть карточку"
+          }
+        }
+      }
+    },
+    "Открыть страницу актёра": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the actor’s page"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть страницу актёра"
           }
         }
       }
@@ -5457,6 +5606,23 @@
         }
       }
     },
+    "Разложим так: «%1$@ / %2$@ / %3$@ - %4$@.mp4» — понятно и в Finder, без приложения.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "They will be laid out as “%1$@ / %2$@ / %3$@ - %4$@.mp4” — readable in Finder, without the app."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разложим так: «%1$@ / %2$@ / %3$@ - %4$@.mp4» — понятно и в Finder, без приложения."
+          }
+        }
+      }
+    },
     "Размер буфера": {
       "extractionState": "manual",
       "localizations": {
@@ -5576,6 +5742,22 @@
         }
       }
     },
+    "Свернуть": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collapse"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Свернуть"
+          }
+        }
+      }
+    },
     "Сезон": {
       "extractionState": "manual",
       "localizations": {
@@ -5623,6 +5805,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Сейчас установлена %@."
+          }
+        }
+      }
+    },
+    "Сейчас: %@ — как язык приложения. Смените язык приложения, и описания сменятся вместе с ним.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now: %@ — same as the app language. Change the app language and the descriptions follow."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сейчас: %@ — как язык приложения. Смените язык приложения, и описания сменятся вместе с ним."
           }
         }
       }
@@ -6647,6 +6845,22 @@
         }
       }
     },
+    "Фильмография": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filmography"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фильмография"
+          }
+        }
+      }
+    },
     "Фильмы": {
       "extractionState": "manual",
       "localizations": {
@@ -6660,6 +6874,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Фильмы"
+          }
+        }
+      }
+    },
+    "Читать дальше": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read more"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Читать дальше"
           }
         }
       }
@@ -6835,7 +7065,6 @@
       }
     },
     "Язык метаданных": {
-      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -6847,91 +7076,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Язык метаданных"
-          }
-        }
-      }
-    },
-    "%1$lld сезон, %2$lld серия": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "season %1$lld, episode %2$lld"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$lld сезон, %2$lld серия"
-          }
-        }
-      }
-    },
-    "%1$lld ч %2$lld мин": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$lld h %2$lld min"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$lld ч %2$lld мин"
-          }
-        }
-      }
-    },
-    "Ищу в TMDB: %1$@ (%2$lld/%3$lld)": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Searching TMDB: %1$@ (%2$lld/%3$lld)"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ищу в TMDB: %1$@ (%2$lld/%3$lld)"
-          }
-        }
-      }
-    },
-    "Остановились на %1$@ из %2$@": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stopped at %1$@ of %2$@"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Остановились на %1$@ из %2$@"
-          }
-        }
-      }
-    },
-    "Разложим так: «%1$@ / %2$@ / %3$@ - %4$@.mp4» — понятно и в Finder, без приложения.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "They will be laid out as “%1$@ / %2$@ / %3$@ - %4$@.mp4” — readable in Finder, without the app."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Разложим так: «%1$@ / %2$@ / %3$@ - %4$@.mp4» — понятно и в Finder, без приложения."
           }
         }
       }
