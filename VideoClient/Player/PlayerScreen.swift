@@ -277,8 +277,8 @@ nonisolated enum TimeFormat {
     /// «2 ч 18 мин» для длительности фильма.
     static func runtime(minutes: Int) -> String {
         let hours = minutes / 60, mins = minutes % 60
-        if hours > 0 && mins > 0 { return "\(hours) ч \(mins) мин" }
-        if hours > 0 { return "\(hours) ч" }
-        return "\(mins) мин"
+        if hours > 0 && mins > 0 { return String(localized: "\(hours) ч \(mins) мин") }
+        if hours > 0 { return String(localized: "\(hours) ч") }
+        return String(localized: "\(mins) мин")
     }
 }

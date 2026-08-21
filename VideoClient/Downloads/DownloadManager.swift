@@ -50,20 +50,20 @@ final class DownloadManager {
 
         var subtitle: String {
             switch status {
-            case .waiting: return "В очереди"
-            case .probing: return "Читаю ссылку…"
+            case .waiting: return String(localized: "В очереди")
+            case .probing: return String(localized: "Читаю ссылку…")
             case .running:
                 var parts: [String] = []
                 if let itemIndex, let itemCount { parts.append("\(itemIndex) из \(itemCount)") }
                 if let speed { parts.append(speed) }
-                if let eta { parts.append("осталось \(eta)") }
-                return parts.isEmpty ? "Загрузка…" : parts.joined(separator: " · ")
+                if let eta { parts.append(String(localized: "осталось \(eta)")) }
+                return parts.isEmpty ? String(localized: "Загрузка…") : parts.joined(separator: " · ")
             case .finished:
                 return downloadedFiles.isEmpty
                     ? "Готово"
-                    : "Готово · \(Plural.files(downloadedFiles.count))"
+                    : String(localized: "Готово · \(Plural.files(downloadedFiles.count))")
             case .failed(let message): return message
-            case .cancelled: return "Отменено"
+            case .cancelled: return String(localized: "Отменено")
             }
         }
     }
@@ -81,6 +81,13 @@ final class DownloadManager {
     private var processes: [UUID: Process] = [:]
 
     var hasActiveJobs: Bool { jobs.contains { $0.status.isActive } }
+
+    /// Имя папки сезона на диске. Оно же показывается в подсказке под формой,
+    /// поэтому берётся из одного места: подсказка и то, что окажется в Finder,
+    /// должны совпадать.
+    nonisolated static func seasonFolder(_ season: Int) -> String {
+        String(localized: "Сезон \(season)")
+    }
 
     // MARK: - Разбор ссылки
 
@@ -105,10 +112,10 @@ final class DownloadManager {
 
         guard let data = output.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw DownloadError.probeFailed("Не удалось прочитать ответ yt-dlp")
+            throw DownloadError.probeFailed(String(localized: "Не удалось прочитать ответ yt-dlp"))
         }
 
-        let title = (json["title"] as? String) ?? "Без названия"
+        let title = (json["title"] as? String) ?? String(localized: "Без названия")
         let entries = (json["entries"] as? [[String: Any]]) ?? []
         let isPlaylist = (json["_type"] as? String) == "playlist" || !entries.isEmpty
         return Probe(title: title,
@@ -145,7 +152,7 @@ final class DownloadManager {
     private func run(_ id: UUID) async {
         guard let job = jobs.first(where: { $0.id == id }) else { return }
         guard let tool = ExternalTools.ytDLP else {
-            update(id) { $0.status = .failed("yt-dlp не найден — установите его через Homebrew") }
+            update(id) { $0.status = .failed(String(localized: "yt-dlp не найден — установите его через Homebrew")) }
             return
         }
 
@@ -177,7 +184,7 @@ final class DownloadManager {
                 job.status = .finished
                 job.progress = 1
             } else {
-                job.status = .failed(errorBox.value ?? "yt-dlp завершился с кодом \(status)")
+                job.status = .failed(errorBox.value ?? String(localized: "yt-dlp завершился с кодом \(status)"))
             }
         }
 
@@ -251,7 +258,7 @@ final class DownloadManager {
             args += [
                 "--yes-playlist",
                 "--autonumber-start", String(startEpisode),
-                "-o", "\(safeShow)/Сезон \(season)/\(safeShow) - S\(seasonCode)E%(autonumber)02d.%(ext)s",
+                "-o", "\(safeShow)/\(Self.seasonFolder(season))/\(safeShow) - S\(seasonCode)E%(autonumber)02d.%(ext)s",
             ]
         }
 
@@ -267,7 +274,7 @@ final class DownloadManager {
             update(id) { $0.progress = percent / 100 }
         }
         if let speed = Self.match(line, #"at\s+([\d.]+\s*[KMG]iB/s)"#) {
-            update(id) { $0.speed = speed.replacingOccurrences(of: "iB/s", with: "Б/с") }
+            update(id) { $0.speed = speed.replacingOccurrences(of: "iB/s", with: String(localized: "Б/с")) }
         }
         if let eta = Self.match(line, #"ETA\s+([\d:]+)"#) {
             update(id) { $0.eta = eta }
@@ -364,10 +371,10 @@ final class DownloadManager {
 
         guard status == 0 else {
             if watchdog.isCancelled == false, process.terminationReason == .uncaughtSignal {
-                throw DownloadError.probeFailed("превышено время ожидания — сайт не ответил")
+                throw DownloadError.probeFailed(String(localized: "превышено время ожидания — сайт не ответил"))
             }
             let message = errorBox.text
-                .split(separator: "\n").last.map(String.init) ?? "неизвестная ошибка"
+                .split(separator: "\n").last.map(String.init) ?? String(localized: "неизвестная ошибка")
             throw DownloadError.probeFailed(message)
         }
         return outputBox.text
@@ -381,9 +388,9 @@ enum DownloadError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .toolMissing:
-            "yt-dlp не найден. Установите его: brew install yt-dlp"
+            String(localized: "yt-dlp не найден. Установите его: brew install yt-dlp")
         case .probeFailed(let detail):
-            "Не удалось разобрать ссылку: \(detail)"
+            String(localized: "Не удалось разобрать ссылку: \(detail)")
         }
     }
 }

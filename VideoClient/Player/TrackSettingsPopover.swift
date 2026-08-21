@@ -51,7 +51,7 @@ struct TrackSettingsPopover: View {
                         }
                     }
                 }
-                DelayStepper(title: "Задержка звука",
+                DelayStepper(title: String(localized: "Задержка звука"),
                              value: Binding(get: { engine.audioDelay },
                                             set: { engine.audioDelay = $0 }))
             }
@@ -67,7 +67,7 @@ struct TrackSettingsPopover: View {
                         Text(track.name).tag(track.id)
                     }
                 }
-                DelayStepper(title: "Задержка субтитров",
+                DelayStepper(title: String(localized: "Задержка субтитров"),
                              value: Binding(get: { engine.subtitleDelay },
                                             set: { engine.subtitleDelay = $0 }))
             }

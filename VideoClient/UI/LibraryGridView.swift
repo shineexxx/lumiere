@@ -55,9 +55,9 @@ struct LibraryGridView: View {
     private var continueSection: some View {
         let items = store.continueWatching
         if items.isEmpty {
-            header("Продолжить смотреть", count: 0)
+            header(String(localized: "Продолжить смотреть"), count: 0)
         } else {
-            header("Продолжить смотреть", count: items.count)
+            header(String(localized: "Продолжить смотреть"), count: items.count)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 300, maximum: 380), spacing: 20)],
                       alignment: .leading, spacing: 20) {
                 ForEach(items) { item in
@@ -77,7 +77,7 @@ struct LibraryGridView: View {
 
             let recent = store.entries.sorted { $0.addedAt > $1.addedAt }.prefix(12)
             if !recent.isEmpty {
-                header("Недавно добавленные", count: nil)
+                header(String(localized: "Недавно добавленные"), count: nil)
                 LazyVGrid(columns: columns, alignment: .leading, spacing: 26) {
                     ForEach(Array(recent)) { entry in
                         PosterCard(entry: entry)

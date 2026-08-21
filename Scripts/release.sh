@@ -24,16 +24,40 @@ rm -rf /Applications/Lumiere.app
 ditto "$APP" /Applications/Lumiere.app
 codesign --force --deep --sign - /Applications/Lumiere.app
 
-echo "Пакую…"
+echo "Пакую zip…"
 ZIP="/tmp/Lumiere-$VERSION.zip"
 rm -f "$ZIP"
 ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
 
+echo "Собираю dmg…"
+DMG="/tmp/Lumiere-$VERSION.dmg"
+STAGE="$(mktemp -d)"
+ditto "$APP" "$STAGE/Lumiere.app"
+ln -s /Applications "$STAGE/Applications"
+rm -f "$DMG"
+hdiutil create -volname "Lumière $VERSION" -srcfolder "$STAGE" -ov -format UDZO -quiet "$DMG"
+rm -rf "$STAGE"
+
 echo "Публикую релиз $TAG…"
 if [ -n "$NOTES" ]; then
-  gh release create "$TAG" "$ZIP" --title "Lumière $VERSION" --notes "$NOTES"
+  gh release create "$TAG" "$DMG" "$ZIP" --title "Lumière $VERSION" --notes "$NOTES"
 else
-  gh release create "$TAG" "$ZIP" --title "Lumière $VERSION" --generate-notes
+  gh release create "$TAG" "$DMG" "$ZIP" --title "Lumière $VERSION" --generate-notes
+fi
+
+# Cask в отдельном репозитории-тапе: обновляем версию и контрольную сумму,
+# иначе «brew install --cask» будет ставить прошлый релиз.
+TAP="${LUMIERE_TAP:-$HOME/Projects/homebrew-lumiere}"
+if [ -d "$TAP/.git" ]; then
+  echo "Обновляю cask…"
+  SHA="$(shasum -a 256 "$DMG" | cut -d' ' -f1)"
+  /usr/bin/sed -i '' -E "s/^  version \".*\"$/  version \"$VERSION\"/" "$TAP/Casks/lumiere.rb"
+  /usr/bin/sed -i '' -E "s/^  sha256 .*$/  sha256 \"$SHA\"/" "$TAP/Casks/lumiere.rb"
+  git -C "$TAP" add -A
+  git -C "$TAP" commit -q -m "Lumière $VERSION" && git -C "$TAP" push -q origin main
+  echo "Cask обновлён: $VERSION / ${SHA:0:12}…"
+else
+  echo "Тап не найден в $TAP — cask не обновлён" >&2
 fi
 
 echo "Готово: $(gh release view "$TAG" --json url --jq .url)"

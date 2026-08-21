@@ -57,7 +57,7 @@ struct GlobalSearchView: View {
             }
             Text(results.isEmpty
                  ? "Ищем везде — и то, чего нет у вас на диске."
-                 : "«\(query)» · \(Plural.format(results.count, "результат", "результата", "результатов"))")
+                 : "«\(query)» · \(Plural.format(results.count, Plural.resultsForms))")
                 .font(.callout).foregroundStyle(.secondary)
         }
     }
@@ -98,7 +98,7 @@ struct GlobalSearchView: View {
         guard !Task.isCancelled else { return }
 
         guard await coordinator.client.hasKey else {
-            searchError = "Не задан API-ключ TMDB. Откройте Настройки (⌘,) и добавьте ключ."
+            searchError = String(localized: "Не задан API-ключ TMDB. Откройте Настройки (⌘,) и добавьте ключ.")
             return
         }
 

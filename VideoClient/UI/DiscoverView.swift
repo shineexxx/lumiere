@@ -93,14 +93,14 @@ struct DiscoverView: View {
         defer { isLoading = false }
 
         guard await coordinator.client.hasKey else {
-            loadError = "Не задан API-ключ TMDB. Откройте Настройки (⌘,) и добавьте ключ."
+            loadError = String(localized: "Не задан API-ключ TMDB. Откройте Настройки (⌘,) и добавьте ключ.")
             return
         }
         let taste = Recommender.taste(entries: store.entries, watch: store.watch)
         let result = await Recommender(client: coordinator.client).shelves(taste: taste)
         shelves = result
         if result.isEmpty {
-            loadError = "TMDB не вернул подборок. Проверьте соединение и попробуйте ещё раз."
+            loadError = String(localized: "TMDB не вернул подборок. Проверьте соединение и попробуйте ещё раз.")
         }
     }
 }

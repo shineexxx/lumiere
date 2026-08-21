@@ -203,25 +203,25 @@ struct DetailView: View {
     private var playTarget: (label: String, episode: EpisodeEntry?, canRestart: Bool) {
         switch live.kind {
         case .movie:
-            guard let file = live.movieFile else { return ("Смотреть", nil, false) }
+            guard let file = live.movieFile else { return (String(localized: "Смотреть"), nil, false) }
             if let state = store.watchState(for: live.watchKey), state.isInProgress {
-                return ("Продолжить с \(TimeFormat.clock(state.position))", nil, true)
+                return (String(localized: "Продолжить с \(TimeFormat.clock(state.position))"), nil, true)
             }
             if store.watchState(for: live.watchKey)?.isFinished == true {
-                return ("Смотреть снова", nil, false)
+                return (String(localized: "Смотреть снова"), nil, false)
             }
-            return ("Смотреть", nil, false)
+            return (String(localized: "Смотреть"), nil, false)
 
         case .show:
             let ordered = live.episodes.sorted { ($0.season, $0.episode) < ($1.season, $1.episode) }
             if let current = ordered.first(where: { store.watchState(for: $0.id)?.isInProgress == true }) {
-                return ("Продолжить: \(current.displayCode)", current, true)
+                return (String(localized: "Продолжить: \(current.displayCode)"), current, true)
             }
             if let next = ordered.first(where: { store.watchState(for: $0.id)?.isFinished != true && $0.isAvailable }) {
                 let isFirst = next.id == ordered.first?.id
-                return (isFirst ? "Смотреть: \(next.displayCode)" : "Дальше: \(next.displayCode)", next, false)
+                return (isFirst ? String(localized: "Смотреть: \(next.displayCode)") : String(localized: "Дальше: \(next.displayCode)"), next, false)
             }
-            return ("Смотреть снова", ordered.first { $0.isAvailable }, false)
+            return (String(localized: "Смотреть снова"), ordered.first { $0.isAvailable }, false)
         }
     }
 
@@ -412,8 +412,9 @@ struct EpisodeRow: View {
                         .lineLimit(2)
                 }
                 if let state, !state.isFinished, state.hasResumablePosition {
-                    Text("Остановились на \(TimeFormat.clock(state.position))"
-                         + (state.duration > 0 ? " из \(TimeFormat.clock(state.duration))" : ""))
+                    Text(state.duration > 0
+                         ? String(localized: "Остановились на \(TimeFormat.clock(state.position)) из \(TimeFormat.clock(state.duration))")
+                         : String(localized: "Остановились на \(TimeFormat.clock(state.position))"))
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(Color.accentColor)
                 }

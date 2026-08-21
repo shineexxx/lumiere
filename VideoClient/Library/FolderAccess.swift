@@ -21,8 +21,8 @@ final class FolderAccess {
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
-        panel.prompt = "Добавить"
-        panel.message = "Выберите папку с фильмами или сериалами"
+        panel.prompt = String(localized: "Добавить")
+        panel.message = String(localized: "Выберите папку с фильмами или сериалами")
         guard panel.runModal() == .OK, let url = panel.url else { return nil }
         guard let bookmark = try? url.bookmarkData(options: .withSecurityScope,
                                                    includingResourceValuesForKeys: nil,

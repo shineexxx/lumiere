@@ -96,7 +96,7 @@ nonisolated enum LibraryScanner {
                 } else {
                     entry.episodes.append(EpisodeEntry(season: season,
                                                        episode: episode,
-                                                       title: "Эпизод \(episode)",
+                                                       title: String(localized: "Эпизод \(episode)"),
                                                        file: item.file))
                 }
                 if entry.parsedYear == nil { entry.parsedYear = parsed.year }

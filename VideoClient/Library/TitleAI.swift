@@ -30,7 +30,7 @@ final class TitleAI {
         var isAvailable: Bool { self == .available }
     }
 
-    private(set) var availability: Availability = .notSupported("Модель ещё не проверялась")
+    private(set) var availability: Availability = .notSupported(String(localized: "Модель ещё не проверялась"))
     private var didCheck = false
 
     /// Пользователя предупреждаем один раз за всё время, а не при каждом запуске.
@@ -68,10 +68,10 @@ final class TitleAI {
         case .unavailable(let reason):
             availability = .notSupported(Self.describe(reason))
         @unknown default:
-            availability = .notSupported("Встроенная модель недоступна на этом Маке.")
+            availability = .notSupported(String(localized: "Встроенная модель недоступна на этом Маке."))
         }
         #else
-        availability = .notSupported("Эта сборка собрана без поддержки встроенной модели macOS.")
+        availability = .notSupported(String(localized: "Эта сборка собрана без поддержки встроенной модели macOS."))
         #endif
     }
 
@@ -79,14 +79,13 @@ final class TitleAI {
     private static func describe(_ reason: SystemLanguageModel.Availability.UnavailableReason) -> String {
         switch reason {
         case .deviceNotEligible:
-            "Этот Мак не поддерживает встроенную языковую модель Apple."
+            String(localized: "Этот Мак не поддерживает встроенную языковую модель Apple.")
         case .appleIntelligenceNotEnabled:
-            "Apple Intelligence выключен. Включите его в Системных настройках, "
-            + "если хотите, чтобы приложение разбирало сложные заголовки роликов."
+            String(localized: "Apple Intelligence выключен. Включите его в Системных настройках, если хотите, чтобы приложение разбирало сложные заголовки роликов.")
         case .modelNotReady:
-            "Модель Apple Intelligence ещё загружается — попробуйте позже."
+            String(localized: "Модель Apple Intelligence ещё загружается — попробуйте позже.")
         @unknown default:
-            "Встроенная модель недоступна."
+            String(localized: "Встроенная модель недоступна.")
         }
     }
     #endif

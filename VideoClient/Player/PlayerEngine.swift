@@ -34,7 +34,7 @@ nonisolated enum PlaybackBackend: String, CaseIterable, Identifiable, Codable {
 
     var title: String {
         switch self {
-        case .av: "AVPlayer (системный)"
+        case .av: String(localized: "AVPlayer (системный)")
         case .vlc: "VLC"
         }
     }
@@ -72,7 +72,7 @@ nonisolated enum PlaybackSupport {
             case .avi: "AVI"
             case .mpegTS: "MPEG-TS"
             case .flv: "FLV"
-            case .unknown: "неизвестный формат"
+            case .unknown: String(localized: "неизвестный формат")
             }
         }
     }

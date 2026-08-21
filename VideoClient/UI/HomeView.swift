@@ -18,13 +18,13 @@ struct HomeView: View {
                     continueSection
                 }
                 if !recentlyAdded.isEmpty {
-                    section("Недавно добавленные", filter: .all, entries: recentlyAdded)
+                    section(String(localized: "Недавно добавленные"), filter: .all, entries: recentlyAdded)
                 }
                 if !availableNow.isEmpty {
-                    section("Готово к просмотру", filter: .available, entries: availableNow)
+                    section(String(localized: "Готово к просмотру"), filter: .available, entries: availableNow)
                 }
                 if !unfinishedShows.isEmpty {
-                    section("Сериалы в процессе", filter: .shows, entries: unfinishedShows)
+                    section(String(localized: "Сериалы в процессе"), filter: .shows, entries: unfinishedShows)
                 }
                 if store.entries.isEmpty {
                     emptyHint
@@ -56,10 +56,10 @@ struct HomeView: View {
 
     private var timeGreeting: String {
         switch Calendar.current.component(.hour, from: Date()) {
-        case 5..<12: "Доброе утро"
-        case 12..<18: "Добрый день"
-        case 18..<23: "Добрый вечер"
-        default: "Доброй ночи"
+        case 5..<12: String(localized: "Доброе утро")
+        case 12..<18: String(localized: "Добрый день")
+        case 18..<23: String(localized: "Добрый вечер")
+        default: String(localized: "Доброй ночи")
         }
     }
 
@@ -69,7 +69,7 @@ struct HomeView: View {
 
     private var continueSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            sectionHeader("Продолжить смотреть", filter: .continueWatching)
+            sectionHeader(String(localized: "Продолжить смотреть"), filter: .continueWatching)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 300, maximum: 380), spacing: 20)],
                       alignment: .leading, spacing: 20) {
                 ForEach(store.continueWatching.prefix(6)) { item in

@@ -55,12 +55,10 @@ final class LibraryCoordinator {
 
         for root in roots {
             guard let url = access.url(for: root) else {
-                lastError = "Папка недоступна:\n\(root.displayPath)\n\n"
-                    + "Проверьте, подключён ли диск и на месте ли папка. "
-                    + "Если она переехала — уберите её в настройках и добавьте заново."
+                lastError = String(localized: "Папка недоступна:\n\(root.displayPath)\n\nПроверьте, подключён ли диск и на месте ли папка. Если она переехала — уберите её в настройках и добавьте заново.")
                 continue
             }
-            store.statusMessage = "Сканирую \(url.lastPathComponent)…"
+            store.statusMessage = String(localized: "Сканирую \(url.lastPathComponent)…")
             let rootID = root.id
             let found = await Task.detached(priority: .userInitiated) {
                 LibraryScanner.scan(rootURL: url, rootID: rootID)
@@ -71,7 +69,7 @@ final class LibraryCoordinator {
         }
 
         guard !newEntries.isEmpty else {
-            store.statusMessage = "Новых файлов не найдено"
+            store.statusMessage = String(localized: "Новых файлов не найдено")
             try? await Task.sleep(for: .seconds(2))
             return
         }
@@ -114,7 +112,7 @@ final class LibraryCoordinator {
         }
 
         store.collapseDuplicateEpisodes()
-        store.statusMessage = "Добавлено: \(addedEntries.count)"
+        store.statusMessage = String(localized: "Добавлено: \(addedEntries.count)")
         await matchMetadata(for: addedEntries)
     }
 
@@ -122,7 +120,7 @@ final class LibraryCoordinator {
 
     func matchMetadata(for entries: [MediaEntry]) async {
         guard await client.hasKey else {
-            lastError = "Добавьте API-ключ TMDB в настройках, чтобы подтянуть постеры и описания."
+            lastError = String(localized: "Добавьте API-ключ TMDB в настройках, чтобы подтянуть постеры и описания.")
             return
         }
         isMatching = true
@@ -130,7 +128,7 @@ final class LibraryCoordinator {
 
         let matcher = Matcher(client: client)
         for (index, entry) in entries.enumerated() {
-            store.statusMessage = "Ищу в TMDB: \(entry.parsedTitle) (\(index + 1)/\(entries.count))"
+            store.statusMessage = String(localized: "Ищу в TMDB: \(entry.parsedTitle) (\(index + 1)/\(entries.count))")
             do {
                 let candidates = try await matcher.candidates(for: entry)
                 guard let best = candidates.first else {
@@ -175,7 +173,7 @@ final class LibraryCoordinator {
         let (updated, outcome) = renamer.rename(entry: entry)
         if outcome.renamed > 0 { renamedCount += outcome.renamed }
         if !outcome.failures.isEmpty {
-            lastError = "Не удалось переименовать:\n" + outcome.failures.prefix(5).joined(separator: "\n")
+            lastError = String(localized: "Не удалось переименовать:") + "\n" + outcome.failures.prefix(5).joined(separator: "\n")
         }
         return updated
     }
@@ -191,13 +189,13 @@ final class LibraryCoordinator {
         var total = 0
         var failures: [String] = []
         for entry in store.entries where entry.tmdbID != nil {
-            store.statusMessage = "Переименовываю: \(entry.displayTitle)"
+            store.statusMessage = String(localized: "Переименовываю: \(entry.displayTitle)")
             let (updated, outcome) = renamer.rename(entry: entry)
             total += outcome.renamed
             failures.append(contentsOf: outcome.failures)
             if outcome.renamed > 0 { store.upsert(updated) }
         }
-        store.statusMessage = "Переименовано файлов: \(total)"
+        store.statusMessage = String(localized: "Переименовано файлов: \(total)")
         if !failures.isEmpty {
             lastError = "Не удалось переименовать:\n" + failures.prefix(8).joined(separator: "\n")
         }
@@ -240,7 +238,7 @@ final class LibraryCoordinator {
     func rebuildFromFilenames() async {
         store.isBusy = true
         defer { store.isBusy = false; store.statusMessage = nil }
-        store.statusMessage = "Перечитываю имена файлов…"
+        store.statusMessage = String(localized: "Перечитываю имена файлов…")
 
         // Запоминаем, какие метаданные уже подтверждены — по файлам, а не по карточке.
         var metadataByFile: [UUID: MediaEntry] = [:]
@@ -283,13 +281,13 @@ final class LibraryCoordinator {
         // Для сериалов дозагружаем названия серий, которых раньше не было.
         let matcher = Matcher(client: client)
         for entry in rebuilt where entry.kind == .show && entry.tmdbID != nil {
-            store.statusMessage = "Обновляю серии: \(entry.displayTitle)"
+            store.statusMessage = String(localized: "Обновляю серии: \(entry.displayTitle)")
             if let filled = await refreshedEpisodes(for: entry, showID: entry.tmdbID!) {
                 store.upsert(filled)
             }
         }
 
-        store.statusMessage = "Готово: \(rebuilt.count) карточек"
+        store.statusMessage = String(localized: "Готово: \(Plural.items(rebuilt.count))")
         try? await Task.sleep(for: .seconds(2))
     }
 

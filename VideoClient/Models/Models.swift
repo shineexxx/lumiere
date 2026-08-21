@@ -75,11 +75,11 @@ nonisolated struct EpisodeEntry: Codable, Identifiable, Hashable {
     /// Технический код — используется в именах файлов (стандарт TMDB/Plex).
     var code: String { String(format: "S%02dE%02d", season, episode) }
 
-    /// Как показываем пользователю: «4 сезон, 3 серия».
-    var displayCode: String { "\(season) сезон, \(episode) серия" }
+    /// Как показываем пользователю: «4 сезон, 3 серия» или «season 4, episode 3».
+    var displayCode: String { String(localized: "\(season) сезон, \(episode) серия") }
 
     /// Короткая форма для списка внутри уже выбранного сезона: «3 серия».
-    var shortDisplay: String { "\(episode) серия" }
+    var shortDisplay: String { String(localized: "\(episode) серия") }
 
     /// Есть ли у серии данные с TMDB (а не заглушка «Эпизод N»).
     var hasMetadata: Bool { overview != nil || stillPath != nil || airDate != nil }
@@ -215,26 +215,59 @@ nonisolated struct WatchState: Codable, Hashable {
     }
 }
 
-/// Русские склонения после числительных: 1 серия, 2 серии, 5 серий.
+/// Числительные с существительным: 1 серия, 2 серии, 5 серий — и 1 episode, 2 episodes.
+///
+/// Русских форм три, английских две, поэтому обе пары храним рядом:
+/// разложить это по правилам множественного числа в каталоге строк можно,
+/// но читать и править такой каталог руками заметно тяжелее.
 nonisolated enum Plural {
-    static func format(_ count: Int, _ one: String, _ few: String, _ many: String) -> String {
-        "\(count) \(word(count, one, few, many))"
+
+    /// Формы одного слова для обоих языков.
+    struct Forms: Sendable {
+        var one: String
+        var few: String
+        var many: String
+        var englishOne: String
+        var englishMany: String
     }
 
-    static func word(_ count: Int, _ one: String, _ few: String, _ many: String) -> String {
+    static let episodesForms = Forms(one: "серия", few: "серии", many: "серий",
+                                englishOne: "episode", englishMany: "episodes")
+    static let seasonsForms = Forms(one: "сезон", few: "сезона", many: "сезонов",
+                               englishOne: "season", englishMany: "seasons")
+    static let itemsForms = Forms(one: "карточка", few: "карточки", many: "карточек",
+                             englishOne: "card", englishMany: "cards")
+    static let filesForms = Forms(one: "файл", few: "файла", many: "файлов",
+                             englishOne: "file", englishMany: "files")
+    static let videosForms = Forms(one: "видео", few: "видео", many: "видео",
+                              englishOne: "video", englishMany: "videos")
+    static let resultsForms = Forms(one: "результат", few: "результата", many: "результатов",
+                               englishOne: "result", englishMany: "results")
+
+    /// Язык, на котором приложение сейчас говорит с пользователем.
+    static var isRussian: Bool {
+        Bundle.main.preferredLocalizations.first?.hasPrefix("ru") ?? true
+    }
+
+    static func format(_ count: Int, _ forms: Forms) -> String {
+        "\(count) \(word(count, forms))"
+    }
+
+    static func word(_ count: Int, _ forms: Forms) -> String {
+        guard isRussian else { return abs(count) == 1 ? forms.englishOne : forms.englishMany }
         let mod100 = abs(count) % 100
-        if (11...14).contains(mod100) { return many }
+        if (11...14).contains(mod100) { return forms.many }
         switch abs(count) % 10 {
-        case 1: return one
-        case 2...4: return few
-        default: return many
+        case 1: return forms.one
+        case 2...4: return forms.few
+        default: return forms.many
         }
     }
 
-    static func episodes(_ count: Int) -> String { format(count, "серия", "серии", "серий") }
-    static func seasons(_ count: Int) -> String { format(count, "сезон", "сезона", "сезонов") }
-    static func items(_ count: Int) -> String { format(count, "карточка", "карточки", "карточек") }
-    static func files(_ count: Int) -> String { format(count, "файл", "файла", "файлов") }
+    static func episodes(_ count: Int) -> String { format(count, episodesForms) }
+    static func seasons(_ count: Int) -> String { format(count, seasonsForms) }
+    static func items(_ count: Int) -> String { format(count, itemsForms) }
+    static func files(_ count: Int) -> String { format(count, filesForms) }
 }
 
 nonisolated enum WatchRules {

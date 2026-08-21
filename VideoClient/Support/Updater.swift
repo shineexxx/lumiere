@@ -103,8 +103,10 @@ final class Updater {
         let version = payload.tag_name.trimmingCharacters(in: CharacterSet(charactersIn: "vV"))
         guard Self.isNewer(version, than: currentVersion) else { return nil }
 
-        // Нужен zip с приложением; всё остальное в релизе нас не интересует.
+        // Годится и zip, и dmg. Zip предпочитаем: его распаковка дешевле,
+        // а образ приходится монтировать и отцеплять.
         let asset = payload.assets.first { $0.name.hasSuffix(".zip") }
+            ?? payload.assets.first { $0.name.hasSuffix(".dmg") }
         return Release(version: version,
                        tag: payload.tag_name,
                        notes: payload.body ?? "",
@@ -155,24 +157,26 @@ final class Updater {
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
             throw UpdateError.badResponse((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
+        let suffix = url.pathExtension.isEmpty ? "zip" : url.pathExtension
         let destination = FileManager.default.temporaryDirectory
-            .appendingPathComponent("Lumiere-update-\(UUID().uuidString).zip")
+            .appendingPathComponent("Lumiere-update-\(UUID().uuidString).\(suffix)")
         try FileManager.default.moveItem(at: temporary, to: destination)
         return destination
     }
 
-    /// Распаковывает архив релиза и возвращает путь к .app внутри.
+    /// Достаёт приложение из архива или образа и возвращает путь к нему.
     private func unpack(_ archive: URL) throws -> URL {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("Lumiere-update-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
-        process.arguments = ["-x", "-k", archive.path, directory.path]
-        try process.run()
-        process.waitUntilExit()
-        guard process.terminationStatus == 0 else { throw UpdateError.unpackFailed }
+        if archive.pathExtension.lowercased() == "dmg" {
+            try extractFromImage(archive, into: directory)
+        } else {
+            guard Self.run("/usr/bin/ditto", ["-x", "-k", archive.path, directory.path]) == 0 else {
+                throw UpdateError.unpackFailed
+            }
+        }
 
         let contents = (try? FileManager.default.contentsOfDirectory(at: directory,
                                                                      includingPropertiesForKeys: nil)) ?? []
@@ -180,6 +184,42 @@ final class Updater {
             throw UpdateError.noAppInArchive
         }
         return app
+    }
+
+    /// Монтирует образ, копирует приложение к себе и обязательно отцепляет том —
+    /// иначе в Finder останется висеть примонтированный диск.
+    private func extractFromImage(_ image: URL, into directory: URL) throws {
+        let mountPoint = FileManager.default.temporaryDirectory
+            .appendingPathComponent("Lumiere-mount-\(UUID().uuidString)", isDirectory: true)
+        guard Self.run("/usr/bin/hdiutil",
+                       ["attach", image.path, "-nobrowse", "-readonly", "-noverify",
+                        "-mountpoint", mountPoint.path]) == 0 else {
+            throw UpdateError.unpackFailed
+        }
+        defer { _ = Self.run("/usr/bin/hdiutil", ["detach", mountPoint.path, "-quiet", "-force"]) }
+
+        let mounted = (try? FileManager.default.contentsOfDirectory(at: mountPoint,
+                                                                    includingPropertiesForKeys: nil)) ?? []
+        guard let app = mounted.first(where: { $0.pathExtension == "app" }) else {
+            throw UpdateError.noAppInArchive
+        }
+        // Копируем до размонтирования: после detach путь исчезнет.
+        let destination = directory.appending(path: app.lastPathComponent)
+        guard Self.run("/usr/bin/ditto", [app.path, destination.path]) == 0 else {
+            throw UpdateError.unpackFailed
+        }
+    }
+
+    /// Запускает утилиту и возвращает её код выхода.
+    private nonisolated static func run(_ tool: String, _ arguments: [String]) -> Int32 {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: tool)
+        process.arguments = arguments
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        do { try process.run() } catch { return -1 }
+        process.waitUntilExit()
+        return process.terminationStatus
     }
 
     /// Проверяем, что скачали именно наше приложение, а не что-то постороннее.
@@ -215,7 +255,7 @@ final class Updater {
             try process.run()
         } catch {
             log.error("Не удалось запустить установщик: \(error.localizedDescription)")
-            phase = .failed("Не удалось подменить приложение: \(error.localizedDescription)")
+            phase = .failed(String(localized: "Не удалось подменить приложение: \(error.localizedDescription)"))
             isNoticeVisible = true
             return
         }
@@ -253,11 +293,11 @@ final class Updater {
 
     var noticeTitle: String {
         switch phase {
-        case .available(let release): "Доступна версия \(release.version)"
-        case .readyToInstall(let release): "Версия \(release.version) готова к установке"
-        case .upToDate: "Установлена последняя версия"
-        case .failed: "Не удалось проверить обновления"
-        default: "Обновление"
+        case .available(let release): String(localized: "Доступна версия \(release.version)")
+        case .readyToInstall(let release): String(localized: "Версия \(release.version) готова к установке")
+        case .upToDate: String(localized: "Установлена последняя версия")
+        case .failed: String(localized: "Не удалось проверить обновления")
+        default: String(localized: "Обновление")
         }
     }
 
@@ -265,11 +305,11 @@ final class Updater {
         switch phase {
         case .available(let release):
             let notes = release.notes.trimmingCharacters(in: .whitespacesAndNewlines)
-            return notes.isEmpty ? "Сейчас установлена \(currentVersion)." : notes
+            return notes.isEmpty ? String(localized: "Сейчас установлена \(currentVersion).") : notes
         case .readyToInstall:
-            return "Приложение перезапустится и откроется уже в новой версии."
+            return String(localized: "Приложение перезапустится и откроется уже в новой версии.")
         case .upToDate:
-            return "Версия \(currentVersion) — свежее пока нет."
+            return String(localized: "Версия \(currentVersion) — свежее пока нет.")
         case .failed(let message):
             return message
         default:
@@ -279,12 +319,12 @@ final class Updater {
 
     var statusText: String {
         switch phase {
-        case .idle: "Ещё не проверялось"
-        case .checking: "Проверяю…"
-        case .available(let release): "Доступна версия \(release.version)"
-        case .downloading: "Качаю обновление…"
-        case .readyToInstall(let release): "Версия \(release.version) ждёт перезапуска"
-        case .upToDate: "Последняя версия"
+        case .idle: String(localized: "Ещё не проверялось")
+        case .checking: String(localized: "Проверяю…")
+        case .available(let release): String(localized: "Доступна версия \(release.version)")
+        case .downloading: String(localized: "Качаю обновление…")
+        case .readyToInstall(let release): String(localized: "Версия \(release.version) ждёт перезапуска")
+        case .upToDate: String(localized: "Последняя версия")
         case .failed(let message): message
         }
     }
@@ -306,15 +346,15 @@ nonisolated enum UpdateError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .badResponse(let code) where code == 404:
-            "Релизов пока нет — GitHub ответил 404."
+            String(localized: "Релизов пока нет — GitHub ответил 404.")
         case .badResponse(let code):
-            "GitHub ответил кодом \(code)."
+            String(localized: "GitHub ответил кодом \(code).")
         case .unpackFailed:
-            "Архив с обновлением не распаковался."
+            String(localized: "Архив с обновлением не распаковался.")
         case .noAppInArchive:
-            "В архиве нет приложения."
+            String(localized: "В архиве нет приложения.")
         case .foreignBundle:
-            "В архиве другое приложение — установка отменена."
+            String(localized: "В архиве другое приложение — установка отменена.")
         }
     }
 }

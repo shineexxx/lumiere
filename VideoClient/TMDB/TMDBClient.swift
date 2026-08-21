@@ -8,10 +8,10 @@ enum TMDBError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .missingKey: "Не задан API-ключ TMDB — откройте Настройки."
-        case .unauthorized: "TMDB отклонил ключ. Проверьте его в настройках."
-        case .http(let code): "TMDB ответил ошибкой \(code)."
-        case .decoding(let detail): "Не удалось разобрать ответ TMDB: \(detail)"
+        case .missingKey: String(localized: "Не задан API-ключ TMDB — откройте Настройки.")
+        case .unauthorized: String(localized: "TMDB отклонил ключ. Проверьте его в настройках.")
+        case .http(let code): String(localized: "TMDB ответил ошибкой \(code).")
+        case .decoding(let detail): String(localized: "Не удалось разобрать ответ TMDB: \(detail)")
         }
     }
 }

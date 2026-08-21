@@ -110,7 +110,7 @@ struct DownloadsView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(probe.title).font(.system(size: 15, weight: .semibold)).lineLimit(2)
                     if probe.isPlaylist {
-                        Text("Плейлист · \(Plural.format(probe.itemCount, "видео", "видео", "видео"))")
+                        Text("Плейлист · \(Plural.format(probe.itemCount, Plural.videosForms))")
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }
@@ -135,7 +135,7 @@ struct DownloadsView: View {
                 Text({
                     let name = FileRenamer.sanitize(showName.isEmpty ? probe.title : showName)
                     let code = "S\(String(format: "%02d", season))E\(String(format: "%02d", startEpisode))"
-                    return "Разложим так: «\(name) / Сезон \(season) / \(name) - \(code).mp4» — понятно и в Finder, без приложения."
+                    return String(localized: "Разложим так: «\(name) / \(DownloadManager.seasonFolder(season)) / \(name) - \(code).mp4» — понятно и в Finder, без приложения.")
                 }())
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

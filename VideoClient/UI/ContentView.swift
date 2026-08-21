@@ -23,17 +23,17 @@ enum LibraryFilter: Hashable, Identifiable {
 
     var title: String {
         switch self {
-        case .home: "Главная"
-        case .continueWatching: "Продолжить смотреть"
-        case .discover: "Новое и рекомендации"
-        case .downloads: "Загрузки"
-        case .available: "Доступно к просмотру"
-        case .all: "Вся библиотека"
-        case .movies: "Фильмы"
-        case .shows: "Сериалы"
-        case .favorites: "Избранное"
-        case .finished: "Просмотрено"
-        case .needsMatch: "Требуют уточнения"
+        case .home: String(localized: "Главная")
+        case .continueWatching: String(localized: "Продолжить смотреть")
+        case .discover: String(localized: "Новое и рекомендации")
+        case .downloads: String(localized: "Загрузки")
+        case .available: String(localized: "Доступно к просмотру")
+        case .all: String(localized: "Вся библиотека")
+        case .movies: String(localized: "Фильмы")
+        case .shows: String(localized: "Сериалы")
+        case .favorites: String(localized: "Избранное")
+        case .finished: String(localized: "Просмотрено")
+        case .needsMatch: String(localized: "Требуют уточнения")
         }
     }
 
@@ -64,10 +64,10 @@ enum SortOrder: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .recentlyAdded: "Недавно добавленные"
-        case .title: "По названию"
-        case .year: "По году"
-        case .rating: "По рейтингу"
+        case .recentlyAdded: String(localized: "Недавно добавленные")
+        case .title: String(localized: "По названию")
+        case .year: String(localized: "По году")
+        case .rating: String(localized: "По рейтингу")
         }
     }
 }

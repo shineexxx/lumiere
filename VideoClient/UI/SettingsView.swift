@@ -51,7 +51,7 @@ struct TMDBSettings: View {
                         key = imported
                         saveAndCheck()
                     } else {
-                        checkState = .failed("В связке ключей ключа не нашлось")
+                        checkState = .failed(String(localized: "В связке ключей ключа не нашлось"))
                     }
                 }
                 .font(.callout)
@@ -271,14 +271,14 @@ struct SyncSettings: View {
 
     private func exportToFile() {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "Lumiere-просмотрено.json"
+        panel.nameFieldStringValue = String(localized: "Lumiere-просмотрено.json")
         panel.allowedContentTypes = [.json]
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             try sync.exportData().write(to: url, options: .atomic)
-            importResult = "Сохранено: \(url.lastPathComponent)"
+            importResult = String(localized: "Сохранено: \(url.lastPathComponent)")
         } catch {
-            importResult = "Не удалось сохранить: \(error.localizedDescription)"
+            importResult = String(localized: "Не удалось сохранить: \(error.localizedDescription)")
         }
     }
 
@@ -290,10 +290,10 @@ struct SyncSettings: View {
         do {
             let merged = try sync.importData(Data(contentsOf: url))
             importResult = merged > 0
-                ? "Добавлено или обновлено записей: \(merged)"
-                : "Новых записей не найдено — всё уже было в библиотеке"
+                ? String(localized: "Добавлено или обновлено записей: \(merged)")
+                : String(localized: "Новых записей не найдено — всё уже было в библиотеке")
         } catch {
-            importResult = "Не удалось прочитать файл: \(error.localizedDescription)"
+            importResult = String(localized: "Не удалось прочитать файл: \(error.localizedDescription)")
         }
     }
 }
@@ -312,7 +312,7 @@ struct PlaybackSettings: View {
     var body: some View {
         Form {
             Section {
-                LabeledContent("Движок", value: PlaybackBackend.vlcAvailable ? "VLC" : "AVPlayer (системный)")
+                LabeledContent("Движок", value: PlaybackBackend.vlcAvailable ? "VLC" : String(localized: "AVPlayer (системный)"))
             } header: {
                 Text("Движок")
             } footer: {
@@ -348,7 +348,7 @@ struct PlaybackSettings: View {
                 Picker("Устройство вывода", selection: $audioDeviceID) {
                     Text("Как в системе").tag(0)
                     ForEach(devices) { device in
-                        Text(device.isDefault ? "\(device.name) — системное" : device.name)
+                        Text(device.isDefault ? String(localized: "\(device.name) — системное") : device.name)
                             .tag(Int(device.id))
                     }
                 }
@@ -390,16 +390,16 @@ struct PlaybackSettings: View {
             }
 
             Section {
-                LabeledContent("Пробел", value: "Пауза / продолжить")
-                LabeledContent("← →", value: "Перемотка на 10 секунд")
-                LabeledContent("↑ ↓", value: "Перемотка на минуту")
-                LabeledContent("N / P", value: "Следующая / предыдущая серия")
-                LabeledContent("F", value: "Весь экран")
-                LabeledContent("Esc", value: "Выйти из полного экрана или закрыть плеер")
-                LabeledContent("⌘O", value: "Добавить папку")
-                LabeledContent("⌘R", value: "Обновить библиотеку")
-                LabeledContent("⇧⌘R", value: "Пересобрать карточки из имён файлов")
-                LabeledContent("⌃⌘F", value: "Весь экран (системное)")
+                LabeledContent("Пробел", value: String(localized: "Пауза / продолжить"))
+                LabeledContent("← →", value: String(localized: "Перемотка на 10 секунд"))
+                LabeledContent("↑ ↓", value: String(localized: "Перемотка на минуту"))
+                LabeledContent("N / P", value: String(localized: "Следующая / предыдущая серия"))
+                LabeledContent("F", value: String(localized: "Весь экран"))
+                LabeledContent("Esc", value: String(localized: "Выйти из полного экрана или закрыть плеер"))
+                LabeledContent("⌘O", value: String(localized: "Добавить папку"))
+                LabeledContent("⌘R", value: String(localized: "Обновить библиотеку"))
+                LabeledContent("⇧⌘R", value: String(localized: "Пересобрать карточки из имён файлов"))
+                LabeledContent("⌃⌘F", value: String(localized: "Весь экран (системное)"))
             } header: {
                 Text("Горячие клавиши")
             }

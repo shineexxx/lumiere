@@ -262,7 +262,7 @@ final class VLCPlayerEngine: NSObject, PlayerEngine, VLCMediaPlayerDelegate {
                     onFinished?()
                 }
             case .error:
-                onFailure?("VLC не смог открыть этот файл.")
+                onFailure?(String(localized: "VLC не смог открыть этот файл."))
             case .playing:
                 onPlayingChanged?(true)
             case .paused:

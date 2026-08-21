@@ -36,7 +36,7 @@ struct FileRenamer {
         name += " - \(episode.code)"
         // Заглушку «Эпизод 7» в имя не тащим — она ничего не добавляет к коду серии.
         let title = sanitize(episode.title)
-        if !title.isEmpty, title != "Эпизод \(episode.episode)" {
+        if !title.isEmpty, title != String(localized: "Эпизод \(episode.episode)") {
             name += " - " + title
         }
         return name + "." + ext
@@ -88,11 +88,11 @@ struct FileRenamer {
     private func apply(target: String, to file: inout VideoFileRef, outcome: inout Outcome) {
         guard target != file.fileName else { outcome.skipped += 1; return }
         guard let currentURL = access.fileURL(for: file, roots: roots) else {
-            outcome.failures.append("\(file.fileName): нет доступа к папке")
+            outcome.failures.append(String(localized: "\(file.fileName): нет доступа к папке"))
             return
         }
         guard FileManager.default.fileExists(atPath: currentURL.path) else {
-            outcome.failures.append("\(file.fileName): файл не найден")
+            outcome.failures.append(String(localized: "\(file.fileName): файл не найден"))
             return
         }
 

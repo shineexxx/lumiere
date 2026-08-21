@@ -72,9 +72,9 @@ nonisolated enum VideoSource: String, CaseIterable {
 
     var title: String {
         switch self {
-        case .vk: "VK Видео"
+        case .vk: String(localized: "VK Видео")
         case .rutube: "Rutube"
-        case .other: "другой источник"
+        case .other: String(localized: "другой источник")
         }
     }
 

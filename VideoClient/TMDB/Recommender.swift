@@ -104,10 +104,10 @@ nonisolated struct Recommender {
         if !taste.isEmpty {
             let personal = await personalRecommendations(taste: taste)
             if !personal.isEmpty {
-                shelves.append(Shelf(title: "Вам может понравиться",
+                shelves.append(Shelf(title: String(localized: "Вам может понравиться"),
                                      subtitle: taste.topGenres.isEmpty
-                                        ? "Подобрано по вашим просмотрам"
-                                        : "По вашим просмотрам: " + taste.topGenres.prefix(3).joined(separator: ", "),
+                                        ? String(localized: "Подобрано по вашим просмотрам")
+                                        : String(localized: "По вашим просмотрам: \(taste.topGenres.prefix(3).joined(separator: ", "))"),
                                      items: personal))
             }
         }
@@ -119,15 +119,15 @@ nonisolated struct Recommender {
 
         let movies = await trendingMovies
         if !movies.isEmpty {
-            shelves.append(Shelf(title: "Популярное за неделю", subtitle: "Фильмы", items: filter(movies, taste)))
+            shelves.append(Shelf(title: String(localized: "Популярное за неделю"), subtitle: String(localized: "Фильмы"), items: filter(movies, taste)))
         }
         let shows = await trendingShows
         if !shows.isEmpty {
-            shelves.append(Shelf(title: "Сериалы недели", subtitle: nil, items: filter(shows, taste)))
+            shelves.append(Shelf(title: String(localized: "Сериалы недели"), subtitle: nil, items: filter(shows, taste)))
         }
         let rated = await topRated
         if !rated.isEmpty {
-            shelves.append(Shelf(title: "Высокие оценки", subtitle: "Лучшее по мнению зрителей TMDB",
+            shelves.append(Shelf(title: String(localized: "Высокие оценки"), subtitle: String(localized: "Лучшее по мнению зрителей TMDB"),
                                  items: filter(rated, taste)))
         }
 

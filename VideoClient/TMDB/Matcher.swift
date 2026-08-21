@@ -106,7 +106,7 @@ nonisolated struct Matcher {
                 let parsed = FilenameParser.parse(fileName: file.fileName)
                 entry.episodes.append(EpisodeEntry(season: parsed.season ?? 1,
                                                    episode: parsed.episode ?? 1,
-                                                   title: "Эпизод \(parsed.episode ?? 1)",
+                                                   title: String(localized: "Эпизод \(parsed.episode ?? 1)"),
                                                    file: file))
                 entry.movieFile = nil
             }
@@ -190,7 +190,7 @@ nonisolated struct Matcher {
         for seasonNumber in numbers.sorted() {
             guard let season = try? await client.season(showID: showID, season: seasonNumber) else { continue }
             for meta in season.episodes {
-                let title = meta.name ?? "Эпизод \(meta.episode_number)"
+                let title = meta.name ?? String(localized: "Эпизод \(meta.episode_number)")
                 if let index = updated.episodes.firstIndex(where: {
                     $0.season == seasonNumber && $0.episode == meta.episode_number
                 }) {

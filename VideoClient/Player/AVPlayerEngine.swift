@@ -62,7 +62,7 @@ final class AVPlayerEngine: PlayerEngine {
                     self.player.play()
                 case .failed:
                     let message = item.error?.localizedDescription
-                        ?? "Системный плеер не смог открыть этот файл."
+                        ?? String(localized: "Системный плеер не смог открыть этот файл.")
                     self.onFailure?(message)
                 default:
                     break

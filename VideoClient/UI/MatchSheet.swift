@@ -42,7 +42,7 @@ struct MatchSheet: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Подтвердите совпадение").font(.headline)
                 if let current {
-                    Text("Файл: \(current.entry.parsedTitle)"
+                    Text(String(localized: "Файл: \(current.entry.parsedTitle)")
                          + (current.entry.parsedYear.map { " (\($0))" } ?? ""))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)

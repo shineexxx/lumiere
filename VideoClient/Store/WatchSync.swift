@@ -71,12 +71,10 @@ final class WatchSync {
     /// Почему синхронизация недоступна — текстом для настроек.
     var unavailabilityReason: String? {
         if FileManager.default.ubiquityIdentityToken == nil {
-            return "Не выполнен вход в iCloud на этом Маке."
+            return String(localized: "Не выполнен вход в iCloud на этом Маке.")
         }
         if !cloud.synchronize() {
-            return "Приложение собрано с подписью «для локального запуска», поэтому доступа к iCloud нет. "
-                 + "Выберите свою команду разработчика в Xcode и подключите права из Lumiere-iCloud.entitlements — "
-                 + "или пользуйтесь экспортом в файл, он работает всегда."
+            return String(localized: "Приложение собрано с подписью «для локального запуска», поэтому доступа к iCloud нет. Выберите свою команду разработчика в Xcode и подключите права из Lumiere-iCloud.entitlements — или пользуйтесь экспортом в файл, он работает всегда.")
         }
         return nil
     }
@@ -121,7 +119,7 @@ final class WatchSync {
             lastMergedCount = store.mergeWatch(remote)
             status = .synced(Date())
         } catch {
-            status = .failed("Не удалось прочитать данные из iCloud: \(error.localizedDescription)")
+            status = .failed(String(localized: "Не удалось прочитать данные из iCloud: \(error.localizedDescription)"))
         }
     }
 
@@ -134,15 +132,14 @@ final class WatchSync {
         do {
             let data = try JSONEncoder.videoClient.encode(store.watch)
             guard data.count < Self.sizeLimit else {
-                status = .failed("История просмотров переросла лимит iCloud (1 МБ). "
-                                 + "Синхронизация приостановлена — воспользуйтесь экспортом в файл.")
+                status = .failed(String(localized: "История просмотров переросла лимит iCloud (1 МБ). Синхронизация приостановлена — воспользуйтесь экспортом в файл."))
                 return
             }
             cloud.set(data, forKey: Self.payloadKey)
             cloud.synchronize()
             status = .synced(Date())
         } catch {
-            status = .failed("Не удалось отправить данные в iCloud: \(error.localizedDescription)")
+            status = .failed(String(localized: "Не удалось отправить данные в iCloud: \(error.localizedDescription)"))
         }
     }
 
@@ -163,11 +160,11 @@ final class WatchSync {
 
     var statusText: String {
         switch status {
-        case .off: "Выключена"
+        case .off: String(localized: "Выключена")
         case .unavailable(let reason): reason
-        case .idle: "Готова к синхронизации"
-        case .syncing: "Синхронизация…"
-        case .synced(let date): "Синхронизировано в " + date.formatted(date: .omitted, time: .shortened)
+        case .idle: String(localized: "Готова к синхронизации")
+        case .syncing: String(localized: "Синхронизация…")
+        case .synced(let date): String(localized: "Синхронизировано в \(date.formatted(date: .omitted, time: .shortened))")
         case .failed(let message): message
         }
     }
