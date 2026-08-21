@@ -244,11 +244,18 @@
       "localizations": {
         "ru": {
           "stringUnit": {
-            "state": "new",
+            "state": "translated",
             "value": "%1$lld сезон, %2$lld серия"
           }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "season %1$lld, episode %2$lld"
+          }
         }
-      }
+      },
+      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм."
     },
     "%lld серия": {
       "extractionState": "manual",
@@ -288,11 +295,18 @@
       "localizations": {
         "ru": {
           "stringUnit": {
-            "state": "new",
+            "state": "translated",
             "value": "%1$lld ч %2$lld мин"
           }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld h %2$lld min"
+          }
         }
-      }
+      },
+      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм."
     },
     "← →": {
       "extractionState": "manual",
@@ -2879,11 +2893,18 @@
       "localizations": {
         "ru": {
           "stringUnit": {
-            "state": "new",
+            "state": "translated",
             "value": "Ищу в TMDB: %1$@ (%2$lld/%3$lld)"
           }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Searching TMDB: %1$@ (%2$lld/%3$lld)"
+          }
         }
-      }
+      },
+      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм."
     },
     "Ищу в TMDB: %1$@ (%2$lld/%3$lld)": {
       "extractionState": "manual",
@@ -3186,6 +3207,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Метаданные не подтверждены"
+          }
+        }
+      }
+    },
+    "Метаданные обновлены: %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metadata refreshed: %lld"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Метаданные обновлены: %lld"
           }
         }
       }
@@ -3887,6 +3924,22 @@
         }
       }
     },
+    "Обновить метаданные на текущем языке": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh metadata in the current language"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновить метаданные на текущем языке"
+          }
+        }
+      }
+    },
     "Обновить список": {
       "extractionState": "manual",
       "localizations": {
@@ -3954,6 +4007,23 @@
           }
         }
       }
+    },
+    "Обновляю метаданные: %@ (%lld/%lld)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновляю метаданные: %1$@ (%2$lld/%3$lld)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refreshing metadata: %1$@ (%2$lld/%3$lld)"
+          }
+        }
+      },
+      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм."
     },
     "Обновляю серии: %@": {
       "extractionState": "manual",
@@ -4078,11 +4148,18 @@
       "localizations": {
         "ru": {
           "stringUnit": {
-            "state": "new",
+            "state": "translated",
             "value": "Остановились на %1$@ из %2$@"
           }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped at %1$@ of %2$@"
+          }
         }
-      }
+      },
+      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм."
     },
     "Остановились на %1$@ из %2$@": {
       "extractionState": "manual",
@@ -5583,11 +5660,18 @@
       "localizations": {
         "ru": {
           "stringUnit": {
-            "state": "new",
+            "state": "translated",
             "value": "Разложим так: «%1$@ / %2$@ / %3$@ - %4$@.mp4» — понятно и в Finder, без приложения."
           }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "They will be laid out as “%1$@ / %2$@ / %3$@ - %4$@.mp4” — readable in Finder, without the app."
+          }
         }
-      }
+      },
+      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм."
     },
     "Разложим так: «%@ / Сезон %lld / %@ - %@.mp4» — понятно и в Finder, без приложения.": {
       "extractionState": "manual",
@@ -7076,6 +7160,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Язык метаданных"
+          }
+        }
+      }
+    },
+    "Обновляю метаданные: %1$@ (%2$lld/%3$lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refreshing metadata: %1$@ (%2$lld/%3$lld)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновляю метаданные: %1$@ (%2$lld/%3$lld)"
           }
         }
       }

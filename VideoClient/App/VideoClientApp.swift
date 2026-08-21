@@ -84,6 +84,11 @@ struct VideoClientApp: App {
                 Task { await coordinator.rebuildFromFilenames() }
             }
             .keyboardShortcut("r", modifiers: [.command, .shift])
+
+            Button("Обновить метаданные на текущем языке") {
+                Task { await coordinator.refreshMetadata() }
+            }
+            .keyboardShortcut("r", modifiers: [.command, .option])
         }
 
         // Поиск. ⌃F просили специально; ⌘F оставлен как привычный синоним.

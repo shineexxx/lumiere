@@ -223,6 +223,42 @@ final class LibraryCoordinator {
         }
     }
 
+    /// Перечитывает метаданные всех подтверждённых карточек на текущем языке.
+    ///
+    /// Нужно после смены языка: у карточек, добавленных раньше, названия и описания
+    /// остаются такими, какими их скачали. Файлы, серии и отметки о просмотре
+    /// не трогаются — обновляются только тексты, постеры и состав.
+    func refreshMetadata() async {
+        guard await client.hasKey else {
+            lastError = String(localized: "Добавьте API-ключ TMDB в настройках, чтобы подтянуть постеры и описания.")
+            return
+        }
+        let targets = store.entries.filter { $0.tmdbID != nil }
+        guard !targets.isEmpty else { return }
+
+        store.isBusy = true
+        defer { store.isBusy = false; store.statusMessage = nil }
+
+        let matcher = Matcher(client: client)
+        var updatedCount = 0
+        for (index, entry) in targets.enumerated() {
+            guard let tmdbID = entry.tmdbID else { continue }
+            store.statusMessage = String(localized: "Обновляю метаданные: \(entry.displayTitle) (\(index + 1)/\(targets.count))")
+            do {
+                let refreshed = try await matcher.apply(candidate: MatchCandidate(entry: entry, tmdbID: tmdbID),
+                                                        to: entry)
+                store.upsert(refreshed)
+                updatedCount += 1
+            } catch {
+                lastError = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                if case TMDBError.unauthorized = error { break }
+                if case TMDBError.missingKey = error { break }
+            }
+        }
+        store.saveNow()
+        store.statusMessage = String(localized: "Метаданные обновлены: \(updatedCount)")
+    }
+
     // MARK: - Рекомендации
 
     /// Полки рекомендаций: их показывают и «Главная», и «Новое и рекомендации».

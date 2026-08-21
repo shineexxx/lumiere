@@ -38,12 +38,7 @@ ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
 
 echo "Собираю dmg…"
 DMG="/tmp/Lumiere-$VERSION.dmg"
-STAGE="$(mktemp -d)"
-ditto "$APP" "$STAGE/Lumiere.app"
-ln -s /Applications "$STAGE/Applications"
-rm -f "$DMG"
-hdiutil create -volname "Lumière $VERSION" -srcfolder "$STAGE" -ov -format UDZO -quiet "$DMG"
-rm -rf "$STAGE"
+"$ROOT/Scripts/make-dmg.sh" "$APP" "$VERSION" "$DMG"
 
 echo "Публикую релиз $TAG…"
 if [ -n "$NOTES" ]; then

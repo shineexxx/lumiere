@@ -266,3 +266,19 @@ extension MatchCandidate {
             || character.contains("himself") || character.contains("herself")
     }
 }
+
+extension MatchCandidate {
+    /// Кандидат, собранный из уже привязанной карточки: нужен, чтобы перечитать
+    /// её метаданные с TMDB — например, после смены языка.
+    nonisolated init(entry: MediaEntry, tmdbID: Int) {
+        id = tmdbID
+        kind = entry.kind
+        title = entry.displayTitle
+        originalTitle = entry.originalTitle
+        year = entry.displayYear
+        overview = entry.overview
+        posterPath = entry.posterPath
+        rating = entry.rating
+        score = 1
+    }
+}

@@ -43,8 +43,9 @@ Requires macOS 26 on Apple Silicon. After that the app updates itself — see [U
   with a proper name; a playlist becomes a whole season laid out as `Series / Season N`.
 - **Two searches.** One filters the library section you are in; the one in the top right corner
   searches all of TMDB, so you can open a card for something you do not have yet.
-- **Russian and English.** The interface follows the system language; TMDB metadata language
-  is a separate setting.
+- **Russian and English.** The interface follows the system language, and TMDB metadata follows the
+  interface unless you pick a language explicitly. Cards added earlier keep the language they were
+  fetched in — ⌥⌘R re-reads them all in the current one.
 
 ## Screenshots
 
@@ -149,6 +150,7 @@ not replace.
 | ⌘O | Add folder |
 | ⌘R | Refresh library |
 | ⇧⌘R | Rebuild cards from file names |
+| ⌥⌘R | Refresh metadata in the current language |
 | ⌘, | Settings |
 
 ## How it works
