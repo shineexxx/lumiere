@@ -1,0 +1,11 @@
+# Сборки
+build/
+DerivedData/
+*.xcuserdatad
+xcuserdata/
+
+# VLCKit качается скриптом: 543 МБ, в git ему не место
+Frameworks/
+
+# macOS
+.DS_Store
