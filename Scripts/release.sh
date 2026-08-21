@@ -17,12 +17,19 @@ xcodebuild -project VideoClient.xcodeproj -scheme VideoClient -configuration Rel
 APP="build/Build/Products/Release/Lumiere.app"
 [ -d "$APP" ] || { echo "Сборка не нашлась: $APP" >&2; exit 1; }
 
+# Подписываем ДО упаковки, и обязательно с --deep.
+# Xcode подписывает ad-hoc только сам бандл, а вложенный VLCKit остаётся с
+# подписью VideoLAN. Для dyld это разные Team ID, и он отказывается грузить
+# фреймворк: приложение из dmg падало при запуске ещё до первой строки кода.
+echo "Подписываю…"
+codesign --force --deep --sign - "$APP"
+codesign -v "$APP" || { echo "Подпись не прошла проверку" >&2; exit 1; }
+
 echo "Ставлю в /Applications…"
 osascript -e 'tell application "Lumiere" to quit' 2>/dev/null || true
 sleep 2
 rm -rf /Applications/Lumiere.app
 ditto "$APP" /Applications/Lumiere.app
-codesign --force --deep --sign - /Applications/Lumiere.app
 
 echo "Пакую zip…"
 ZIP="/tmp/Lumiere-$VERSION.zip"
