@@ -203,17 +203,9 @@ final class Updater {
         let script = FileManager.default.temporaryDirectory
             .appendingPathComponent("lumiere-update-\(UUID().uuidString).sh")
 
-        let body = """
-        #!/bin/bash
-        while kill -0 \(ProcessInfo.processInfo.processIdentifier) 2>/dev/null; do sleep 0.2; done
-        rm -rf "\(current.path)"
-        /usr/bin/ditto "\(staged.path)" "\(current.path)"
-        /usr/bin/xattr -dr com.apple.quarantine "\(current.path)" 2>/dev/null
-        /usr/bin/codesign --force --deep --sign - "\(current.path)" 2>/dev/null
-        /usr/bin/open "\(current.path)"
-        rm -rf "\(staged.deletingLastPathComponent().path)"
-        rm -f "$0"
-        """
+        let body = Self.installScript(pid: ProcessInfo.processInfo.processIdentifier,
+                                      current: current,
+                                      staged: staged)
         do {
             try body.write(to: script, atomically: true, encoding: .utf8)
             try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: script.path)
@@ -228,6 +220,24 @@ final class Updater {
             return
         }
         NSApp.terminate(nil)
+    }
+
+    /// Скрипт подмены. Вынесен отдельно, чтобы его можно было прогнать на копии
+    /// приложения, а не проверять сразу на живом.
+    nonisolated static func installScript(pid: Int32, current: URL, staged: URL) -> String {
+        """
+        #!/bin/bash
+        # Ждём, пока приложение закроется и отпустит свои файлы.
+        while kill -0 \(pid) 2>/dev/null; do sleep 0.2; done
+        set -e
+        rm -rf "\(current.path)"
+        /usr/bin/ditto "\(staged.path)" "\(current.path)"
+        /usr/bin/xattr -dr com.apple.quarantine "\(current.path)" 2>/dev/null || true
+        /usr/bin/codesign --force --deep --sign - "\(current.path)" 2>/dev/null || true
+        /usr/bin/open "\(current.path)"
+        rm -rf "\(staged.deletingLastPathComponent().path)"
+        rm -f "$0"
+        """
     }
 
     func openReleasePage() {
