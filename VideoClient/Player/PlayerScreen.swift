@@ -11,6 +11,9 @@ struct PlayerScreen: View {
     @State private var hideTask: Task<Void, Never>?
     @State private var window: NSWindow?
     @State private var showingTracks = false
+    /// Клавиши работают, только пока у вьюхи есть фокус клавиатуры,
+    /// а он теряется, когда окно перекрыли, увели на другой экран или монитор.
+    @FocusState private var keyboardFocused: Bool
 
     var body: some View {
         @Bindable var session = session
@@ -23,6 +26,7 @@ struct PlayerScreen: View {
                 // Клик по картинке — пауза. Раньше паузу перехватывал сам VLC,
                 // и наши контролы об этом не знали.
                 .onTapGesture {
+                    keyboardFocused = true
                     session.togglePlayPause()
                     revealControls()
                 }
@@ -56,6 +60,14 @@ struct PlayerScreen: View {
         // Фокус нужен ради клавиш, но система рисует вокруг фокусируемой вьюхи
         // синее кольцо — в полноэкранном режиме оно висит рамкой вокруг видео.
         .focusEffectDisabled()
+        .focused($keyboardFocused)
+        .onAppear { keyboardFocused = true }
+        // Окно снова стало активным — возвращаем фокус себе, иначе после
+        // перекрытия другим окном или возврата с другого экрана клавиши молчат.
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { note in
+            guard let changed = note.object as? NSWindow, changed == window else { return }
+            keyboardFocused = true
+        }
         .onKeyPress(.space) { session.togglePlayPause(); revealControls(); return .handled }
         .onKeyPress(.leftArrow) { session.skip(-10); revealControls(); return .handled }
         .onKeyPress(.rightArrow) { session.skip(10); revealControls(); return .handled }

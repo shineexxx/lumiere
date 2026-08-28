@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 import SwiftUI
 
@@ -106,9 +107,39 @@ final class VLCPlayerEngine: NSObject, PlayerEngine, VLCMediaPlayerDelegate {
 
     var currentTime: Double { Double(mediaPlayer.time.intValue) / 1000 }
 
+    /// Длительность, вычитанная из файла в обход VLC.
+    private var probedDuration: Double = 0
+
+    /// Длительность ролика.
+    ///
+    /// У части файлов VLC сообщает длину 0 — так бывает у рипов, где в контейнере
+    /// нет длительности (проверено на скачанных сериях: media.length = 0, а время
+    /// идёт). Без длины ползунок стоит на нуле, а прогресс просмотра не пишется
+    /// вовсе, поэтому берём её откуда получится: у VLC, у AVFoundation, а в
+    /// последнюю очередь — из доли воспроизведения.
     var duration: Double {
-        let length = mediaPlayer.media?.length.intValue ?? 0
-        return Double(length) / 1000
+        let length = Double(mediaPlayer.media?.length.intValue ?? 0) / 1000
+        if length > 0 { return length }
+        if lastDuration > 0 { return lastDuration }
+        if probedDuration > 0 { return probedDuration }
+        // Оценка по доле: она грубая и осмысленна только после первых процентов.
+        let position = Double(mediaPlayer.position)
+        let time = currentTime
+        guard position > 0.02, time > 0 else { return 0 }
+        return time / position
+    }
+
+    /// Спрашивает длительность у AVFoundation: для mp4 и mov она есть почти всегда,
+    /// даже когда VLC её не отдаёт.
+    private func probeDuration(of url: URL) {
+        probedDuration = 0
+        Task { [weak self] in
+            let asset = AVURLAsset(url: url)
+            guard let value = try? await asset.load(.duration) else { return }
+            let seconds = CMTimeGetSeconds(value)
+            guard seconds.isFinite, seconds > 0 else { return }
+            await MainActor.run { self?.probedDuration = seconds }
+        }
     }
 
     var isPlaying: Bool { mediaPlayer.isPlaying }
@@ -123,6 +154,7 @@ final class VLCPlayerEngine: NSObject, PlayerEngine, VLCMediaPlayerDelegate {
         lastPosition = 0
         lastDuration = 0
 
+        probeDuration(of: url)
         pendingStart = (url, startAt)
         startPendingIfReady()
     }
