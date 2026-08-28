@@ -33,7 +33,10 @@ hdiutil attach "$TEMP_DMG" -readwrite -noverify -noautoopen -quiet
 sleep 2
 
 # Раскладку окна умеет сохранять только Finder — отсюда AppleScript.
-osascript <<APPLESCRIPT
+# Если системе не разрешено управлять Finder, оформление пропускаем:
+# образ должен собираться в любом случае, пусть и без фона.
+STYLED=1
+osascript <<APPLESCRIPT || STYLED=0
 tell application "Finder"
   tell disk "$VOLUME"
     open
@@ -61,6 +64,11 @@ tell application "Finder"
   end tell
 end tell
 APPLESCRIPT
+
+if [ "$STYLED" = "0" ]; then
+  echo "Не удалось оформить окно образа: системе не разрешено управлять Finder." >&2
+  echo "Разрешение: Системные настройки → Конфиденциальность и безопасность → Автоматизация." >&2
+fi
 
 sync
 hdiutil detach "$MOUNT" -quiet -force
