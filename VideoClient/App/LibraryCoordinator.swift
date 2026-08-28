@@ -259,6 +259,85 @@ final class LibraryCoordinator {
         store.statusMessage = String(localized: "Метаданные обновлены: \(updatedCount)")
     }
 
+    // MARK: - Заставки
+
+    private(set) var isDetectingIntros = false
+
+    /// Ищет заставки в сезонах сериала. Считается по звуку и вслепую к содержанию:
+    /// заставка — единственное, что в сериях сезона звучит одинаково.
+    /// Требует минимум двух скачанных серий сезона и ffmpeg.
+    @discardableResult
+    func detectIntros(for entryID: UUID, force: Bool = false) async -> Int {
+        guard IntroDetector.isAvailable else {
+            lastError = IntroError.noFFmpeg.errorDescription
+            return 0
+        }
+        guard !isDetectingIntros, let entry = store.entry(id: entryID), entry.kind == .show else { return 0 }
+
+        isDetectingIntros = true
+        store.isBusy = true
+        defer { isDetectingIntros = false; store.isBusy = false; store.statusMessage = nil }
+
+        var updatedTotal = 0
+        for season in entry.seasons {
+            guard let fresh = store.entry(id: entryID) else { break }
+            let episodes = fresh.episodes(inSeason: season).filter(\.isAvailable)
+            guard episodes.count >= 2 else { continue }
+            // Уже посчитанные сезоны второй раз не трогаем, если не просят явно.
+            if !force, episodes.allSatisfy({ $0.introRange != nil }) { continue }
+
+            var urls: [URL: UUID] = [:]
+            for episode in episodes {
+                guard let file = episode.file,
+                      let url = access.fileURL(for: file, roots: store.roots) else { continue }
+                urls[url] = episode.id
+            }
+            guard urls.count >= 2 else { continue }
+
+            store.statusMessage = String(localized: "Ищу заставки: \(fresh.displayTitle), сезон \(season)")
+            let files = Array(urls.keys)
+            // Считается это долго и целиком на процессоре — уводим с главного потока.
+            let found = await Task.detached(priority: .utility) {
+                IntroDetector.detect(files: files)
+            }.value
+
+            guard !found.isEmpty else { continue }
+            store.update(id: entryID) { entry in
+                for (url, range) in found {
+                    guard let episodeID = urls[url],
+                          let index = entry.episodes.firstIndex(where: { $0.id == episodeID }) else { continue }
+                    entry.episodes[index].introStart = range.start
+                    entry.episodes[index].introEnd = range.end
+                    updatedTotal += 1
+                }
+            }
+        }
+        store.saveNow()
+        store.statusMessage = String(localized: "Заставок найдено: \(updatedTotal)")
+        return updatedTotal
+    }
+
+    /// То же самое для всей библиотеки — по пункту меню.
+    func detectIntrosInLibrary() async {
+        let shows = store.entries.filter { $0.kind == .show && $0.availableEpisodes.count >= 2 }
+        for show in shows {
+            await detectIntros(for: show.id)
+        }
+    }
+
+    /// Тихий проход для сериала, который начали смотреть: если сезон ещё
+    /// не считали, считаем в фоне — к моменту заставки результат обычно готов.
+    func detectIntrosIfNeeded(for entryID: UUID) {
+        guard IntroDetector.isAvailable, !isDetectingIntros,
+              let entry = store.entry(id: entryID), entry.kind == .show else { return }
+        let needsWork = entry.seasons.contains { season in
+            let episodes = entry.episodes(inSeason: season).filter(\.isAvailable)
+            return episodes.count >= 2 && episodes.contains { $0.introRange == nil }
+        }
+        guard needsWork else { return }
+        Task { await detectIntros(for: entryID) }
+    }
+
     // MARK: - Рекомендации
 
     /// Полки рекомендаций: их показывают и «Главная», и «Новое и рекомендации».

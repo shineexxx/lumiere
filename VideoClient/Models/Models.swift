@@ -64,6 +64,17 @@ nonisolated struct EpisodeEntry: Codable, Identifiable, Hashable {
     /// (или файл удалили — отметка о просмотре при этом сохраняется).
     var file: VideoFileRef?
 
+    /// Границы заставки в секундах — их находит IntroDetector, сравнивая
+    /// серии сезона между собой. Пусто, пока сезон не проанализирован.
+    var introStart: Double?
+    var introEnd: Double?
+
+    /// Отрезок заставки, если он известен и осмыслен.
+    var introRange: ClosedRange<Double>? {
+        guard let introStart, let introEnd, introEnd > introStart + 5 else { return nil }
+        return introStart...introEnd
+    }
+
     var isAvailable: Bool { file != nil }
 
     /// Серия, дата выхода которой ещё не наступила.

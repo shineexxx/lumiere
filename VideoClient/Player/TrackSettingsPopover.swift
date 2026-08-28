@@ -165,4 +165,11 @@ nonisolated enum PlaybackPreferences {
         get { UserDefaults.standard.object(forKey: "autoPlayNext") as? Bool ?? true }
         set { UserDefaults.standard.set(newValue, forKey: "autoPlayNext") }
     }
+
+    /// Пропускать найденную заставку самому, не дожидаясь нажатия кнопки.
+    /// По умолчанию выключено: первую серию сезона обычно смотрят с заставкой.
+    static var autoSkipIntro: Bool {
+        get { UserDefaults.standard.bool(forKey: "autoSkipIntro") }
+        set { UserDefaults.standard.set(newValue, forKey: "autoSkipIntro") }
+    }
 }

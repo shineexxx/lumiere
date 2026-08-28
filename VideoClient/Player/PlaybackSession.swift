@@ -15,6 +15,8 @@ final class PlaybackSession {
         var episodeID: UUID?
         /// Куда писать прогресс: серия — по своему id, фильм — по id карточки.
         var watchKey: UUID
+        /// Границы заставки, если сезон был проанализирован.
+        var introRange: ClosedRange<Double>?
     }
 
     private(set) var item: Item?
@@ -25,6 +27,8 @@ final class PlaybackSession {
     /// Что играем сейчас — нужно, чтобы переоткрыть файл другим движком.
     private var currentURL: URL?
     private var didFallBackToVLC = false
+    /// Заставку в текущей серии уже пропускали автоматически.
+    private var didAutoSkipIntro = false
 
     var currentTime: Double = 0
     var duration: Double = 0
@@ -63,6 +67,7 @@ final class PlaybackSession {
             guard let self, let item = self.item else { return }
             self.currentTime = position
             self.duration = duration
+            self.autoSkipIntroIfNeeded()
             self.isPlaying = self.engine.isPlaying
             self.store.recordProgress(key: item.watchKey, position: position, duration: duration)
         }
@@ -139,9 +144,11 @@ final class PlaybackSession {
                     title: entry.displayTitle,
                     subtitle: target.map { "\($0.displayCode) · \($0.title)" },
                     episodeID: target?.id,
-                    watchKey: watchKey)
+                    watchKey: watchKey,
+                    introRange: target?.introRange)
         currentTime = start
         duration = 0
+        didAutoSkipIntro = false
         isPlaying = true
         isPresented = true
         engine.setRate(rate)
@@ -220,6 +227,27 @@ final class PlaybackSession {
     func goToPreviousEpisode() {
         guard let current = currentShow, let previous = previousEpisodeTarget else { return }
         play(entry: current.entry, episode: previous, restart: true)
+    }
+
+    // MARK: - Заставка
+
+    /// Заставку предлагаем пропустить, пока идёт её отрезок, но не в самом конце:
+    /// кнопка, исчезающая через секунду после появления, только раздражает.
+    var isInIntro: Bool {
+        guard let range = item?.introRange else { return false }
+        return currentTime >= range.lowerBound && currentTime < range.upperBound - 2
+    }
+
+    func skipIntro() {
+        guard let range = item?.introRange else { return }
+        seek(to: range.upperBound)
+    }
+
+    /// Автопропуск: срабатывает один раз за серию, чтобы не мешать перемотке назад.
+    private func autoSkipIntroIfNeeded() {
+        guard PlaybackPreferences.autoSkipIntro, !didAutoSkipIntro, isInIntro else { return }
+        didAutoSkipIntro = true
+        skipIntro()
     }
 
     // MARK: - Управление

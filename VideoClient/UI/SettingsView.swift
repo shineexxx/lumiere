@@ -335,6 +335,9 @@ struct PlaybackSettings: View {
             Section {
                 Toggle("Продолжать с места остановки", isOn: $rememberPosition)
                 Toggle("Автоматически включать следующую серию", isOn: $autoPlayNext)
+                Toggle("Пропускать заставки автоматически",
+                       isOn: Binding(get: { PlaybackPreferences.autoSkipIntro },
+                                     set: { PlaybackPreferences.autoSkipIntro = $0 }))
                 Picker("Продолжать, если посмотрено больше", selection: $resumeMinimum) {
                     Text("5 секунд").tag(5)
                     Text("15 секунд").tag(15)

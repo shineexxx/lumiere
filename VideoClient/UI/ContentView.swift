@@ -150,6 +150,12 @@ struct ContentView: View {
         .onChange(of: session.isPresented) { _, presented in
             if presented { openWindow(id: "player") }
         }
+        // Начали смотреть сериал — считаем заставки сезона в фоне.
+        // Обычно результат готов раньше, чем до заставки дойдёт дело.
+        .onChange(of: session.item?.entryID) { _, entryID in
+            guard let entryID else { return }
+            coordinator.detectIntrosIfNeeded(for: entryID)
+        }
         .sheet(isPresented: $showingMatchSheet) {
             MatchSheet()
                 .environment(coordinator)

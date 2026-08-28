@@ -43,6 +43,31 @@ struct PlayerScreen: View {
                 .padding(20)
                 .transition(.opacity)
             }
+
+            // Кнопку показываем и при спрятанных контролах: заставку пропускают,
+            // не трогая мышь, и прятать её вместе с панелью бессмысленно.
+            if session.isInIntro {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button {
+                            session.skipIntro()
+                            revealControls()
+                        } label: {
+                            Label("Пропустить заставку", systemImage: "forward.end.fill")
+                                .font(.system(size: 13, weight: .medium))
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
+                        }
+                        .buttonStyle(.glass)
+                        .keyboardShortcut("s", modifiers: [])
+                    }
+                }
+                .padding(.horizontal, 26)
+                .padding(.bottom, controlsVisible ? 110 : 34)
+                .transition(.opacity)
+            }
         }
         .onContinuousHover { phase in
             if case .active = phase { revealControls() }

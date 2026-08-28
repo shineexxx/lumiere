@@ -241,21 +241,21 @@
       }
     },
     "%lld сезон, %lld серия": {
+      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм.",
       "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$lld сезон, %2$lld серия"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "season %1$lld, episode %2$lld"
           }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld сезон, %2$lld серия"
+          }
         }
-      },
-      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм."
+      }
     },
     "%lld серия": {
       "extractionState": "manual",
@@ -292,21 +292,21 @@
       }
     },
     "%lld ч %lld мин": {
+      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм.",
       "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$lld ч %2$lld мин"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld h %2$lld min"
           }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld ч %2$lld мин"
+          }
         }
-      },
-      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм."
+      }
     },
     "← →": {
       "extractionState": "manual",
@@ -2091,6 +2091,22 @@
         }
       }
     },
+    "Для поиска заставок нужен ffmpeg: brew install ffmpeg": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finding intros needs ffmpeg: brew install ffmpeg"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для поиска заставок нужен ffmpeg: brew install ffmpeg"
+          }
+        }
+      }
+    },
     "Добавить": {
       "extractionState": "manual",
       "localizations": {
@@ -2702,6 +2718,22 @@
         }
       }
     },
+    "Заставок найдено: %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intros found: %lld"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Заставок найдено: %lld"
+          }
+        }
+      }
+    },
     "Звук": {
       "extractionState": "manual",
       "localizations": {
@@ -2890,21 +2922,21 @@
       }
     },
     "Ищу в TMDB: %@ (%lld/%lld)": {
+      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм.",
       "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ищу в TMDB: %1$@ (%2$lld/%3$lld)"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Searching TMDB: %1$@ (%2$lld/%3$lld)"
           }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ищу в TMDB: %1$@ (%2$lld/%3$lld)"
+          }
         }
-      },
-      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм."
+      }
     },
     "Ищу в TMDB: %1$@ (%2$lld/%3$lld)": {
       "extractionState": "manual",
@@ -2922,6 +2954,23 @@
           }
         }
       }
+    },
+    "Ищу заставки: %@, сезон %lld": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ищу заставки: %1$@, сезон %2$lld"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Looking for intros: %1$@, season %2$lld"
+          }
+        }
+      },
+      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм."
     },
     "К библиотеке": {
       "extractionState": "manual",
@@ -3359,6 +3408,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Найти в TMDB"
+          }
+        }
+      }
+    },
+    "Найти заставки в сериалах": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find intros in series"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найти заставки в сериалах"
           }
         }
       }
@@ -4009,21 +4074,38 @@
       }
     },
     "Обновляю метаданные: %@ (%lld/%lld)": {
+      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм.",
       "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Обновляю метаданные: %1$@ (%2$lld/%3$lld)"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Refreshing metadata: %1$@ (%2$lld/%3$lld)"
           }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновляю метаданные: %1$@ (%2$lld/%3$lld)"
+          }
         }
-      },
-      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм."
+      }
+    },
+    "Обновляю метаданные: %1$@ (%2$lld/%3$lld)": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refreshing metadata: %1$@ (%2$lld/%3$lld)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновляю метаданные: %1$@ (%2$lld/%3$lld)"
+          }
+        }
+      }
     },
     "Обновляю серии: %@": {
       "extractionState": "manual",
@@ -4145,21 +4227,21 @@
       }
     },
     "Остановились на %@ из %@": {
+      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм.",
       "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Остановились на %1$@ из %2$@"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Stopped at %1$@ of %2$@"
           }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Остановились на %1$@ из %2$@"
+          }
         }
-      },
-      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм."
+      }
     },
     "Остановились на %1$@ из %2$@": {
       "extractionState": "manual",
@@ -5622,6 +5704,22 @@
         }
       }
     },
+    "Пропускать заставки автоматически": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip intros automatically"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропускать заставки автоматически"
+          }
+        }
+      }
+    },
     "Пропустить все": {
       "extractionState": "manual",
       "localizations": {
@@ -5635,6 +5733,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Пропустить все"
+          }
+        }
+      }
+    },
+    "Пропустить заставку": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip intro"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропустить заставку"
           }
         }
       }
@@ -5657,21 +5771,21 @@
       }
     },
     "Разложим так: «%@ / %@ / %@ - %@.mp4» — понятно и в Finder, без приложения.": {
+      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм.",
       "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Разложим так: «%1$@ / %2$@ / %3$@ - %4$@.mp4» — понятно и в Finder, без приложения."
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "They will be laid out as “%1$@ / %2$@ / %3$@ - %4$@.mp4” — readable in Finder, without the app."
           }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разложим так: «%1$@ / %2$@ / %3$@ - %4$@.mp4» — понятно и в Finder, без приложения."
+          }
         }
-      },
-      "comment": "Тот же текст под ключом без номеров подстановок: по нему строку ищет рантайм."
+      }
     },
     "Разложим так: «%@ / Сезон %lld / %@ - %@.mp4» — понятно и в Finder, без приложения.": {
       "extractionState": "manual",
@@ -7164,18 +7278,18 @@
         }
       }
     },
-    "Обновляю метаданные: %1$@ (%2$lld/%3$lld)": {
+    "Ищу заставки: %1$@, сезон %2$lld": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Refreshing metadata: %1$@ (%2$lld/%3$lld)"
+            "value": "Looking for intros: %1$@, season %2$lld"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Обновляю метаданные: %1$@ (%2$lld/%3$lld)"
+            "value": "Ищу заставки: %1$@, сезон %2$lld"
           }
         }
       }

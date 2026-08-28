@@ -89,6 +89,11 @@ struct VideoClientApp: App {
                 Task { await coordinator.refreshMetadata() }
             }
             .keyboardShortcut("r", modifiers: [.command, .option])
+
+            Button("Найти заставки в сериалах") {
+                Task { await coordinator.detectIntrosInLibrary() }
+            }
+            .disabled(coordinator.isDetectingIntros)
         }
 
         // Поиск. ⌃F просили специально; ⌘F оставлен как привычный синоним.

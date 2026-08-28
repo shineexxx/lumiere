@@ -37,6 +37,11 @@ Requires macOS 26 on Apple Silicon. After that the app updates itself — see [U
   Matches are confirmed by you, or accepted automatically when the app is confident.
 - **One playback engine.** Everything goes through VLCKit: MKV, AVI, WMV, MPEG-TS inside `.mp4`
   and whatever else AVFoundation refuses to open.
+- **Intro skipping.** Intros are found by ear, not by metadata: the opening is the only stretch that
+  sounds identical across episodes of a season, so comparing episodes to each other reveals it —
+  while recaps and dialogue, which differ every time, are left alone. Needs ffmpeg and at least two
+  episodes of a season on disk; a whole season takes a few seconds. A "Skip intro" button appears
+  while the intro plays, and it can skip by itself (Settings → Playback).
 - **Watch tracking.** Position is remembered per film and per episode, the next episode starts
   by itself, and marks survive deleting the files. Optional iCloud sync, or export to a file.
 - **Downloads.** Paste a link to VK Video or Rutube and the file lands in the library folder
@@ -151,6 +156,7 @@ not replace.
 | ⌘R | Refresh library |
 | ⇧⌘R | Rebuild cards from file names |
 | ⌥⌘R | Refresh metadata in the current language |
+| S | Skip intro (while it is playing) |
 | ⌘, | Settings |
 
 ## How it works
