@@ -53,6 +53,9 @@ struct PlayerScreen: View {
             Text(session.errorMessage ?? "")
         }
         .focusable()
+        // Фокус нужен ради клавиш, но система рисует вокруг фокусируемой вьюхи
+        // синее кольцо — в полноэкранном режиме оно висит рамкой вокруг видео.
+        .focusEffectDisabled()
         .onKeyPress(.space) { session.togglePlayPause(); revealControls(); return .handled }
         .onKeyPress(.leftArrow) { session.skip(-10); revealControls(); return .handled }
         .onKeyPress(.rightArrow) { session.skip(10); revealControls(); return .handled }
@@ -215,6 +218,12 @@ struct PlayerScreen: View {
             try? await Task.sleep(for: .seconds(3))
             guard !Task.isCancelled, session.isPlaying else { return }
             withAnimation(.easeIn(duration: 0.4)) { controlsVisible = false }
+            // Вместе с контролами убираем курсор: в полноэкранном режиме
+            // стрелка посреди кадра мешает. Система вернёт его сама,
+            // как только мышь двинется, — и тогда покажутся и контролы.
+            if FullScreen.isActive(window) {
+                NSCursor.setHiddenUntilMouseMoves(true)
+            }
         }
     }
 }
