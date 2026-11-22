@@ -3666,6 +3666,16 @@
         }
       }
     },
+    "Не удалось получить список видео. Проверьте, что плейлист открыт и содержит доступные ролики.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not read the video list. Check that the playlist is public and contains available videos."
+          }
+        }
+      }
+    },
     "Не удалось прочитать данные из iCloud: %@": {
       "extractionState": "manual",
       "localizations": {

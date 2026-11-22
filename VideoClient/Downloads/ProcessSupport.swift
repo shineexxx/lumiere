@@ -1,31 +1,26 @@
 import Foundation
 
 /// Собирает поток байтов от процесса в законченные строки.
-/// Обработчик чтения вызывается на служебной очереди, поэтому доступ под замком.
-nonisolated final class LineBuffer: @unchecked Sendable {
-    private var storage = ""
-    private let lock = NSLock()
+nonisolated struct LineBuffer {
+    private var storage = Data()
 
     /// Добавляет кусок вывода и возвращает строки, которые уже завершены.
-    func append(_ chunk: String) -> [String] {
-        lock.lock()
-        defer { lock.unlock() }
-        storage += chunk
+    mutating func append(_ chunk: Data) -> [String] {
+        storage.append(chunk)
         var lines: [String] = []
-        while let newline = storage.firstIndex(of: "\n") {
-            lines.append(String(storage[..<newline]))
+        while let newline = storage.firstIndex(of: 0x0A) {
+            let line = storage[..<newline]
+            lines.append(String(decoding: line.last == 0x0D ? line.dropLast() : line, as: UTF8.self))
             storage.removeSubrange(...newline)
         }
         return lines
     }
 
     /// Остаток без перевода строки — забираем в самом конце.
-    func flush() -> String? {
-        lock.lock()
-        defer { lock.unlock() }
+    mutating func flush() -> String? {
         guard !storage.isEmpty else { return nil }
-        let tail = storage
-        storage = ""
+        let tail = String(decoding: storage, as: UTF8.self)
+        storage.removeAll()
         return tail
     }
 }
@@ -42,24 +37,6 @@ nonisolated final class OnceFlag: @unchecked Sendable {
         guard !used else { return false }
         used = true
         return true
-    }
-}
-
-/// Последнее сообщение об ошибке, записанное из фонового обработчика.
-nonisolated final class ErrorBox: @unchecked Sendable {
-    private var storage: String?
-    private let lock = NSLock()
-
-    func set(_ message: String) {
-        lock.lock()
-        storage = message
-        lock.unlock()
-    }
-
-    var value: String? {
-        lock.lock()
-        defer { lock.unlock() }
-        return storage
     }
 }
 

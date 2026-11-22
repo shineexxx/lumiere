@@ -32,6 +32,7 @@ final class DownloadManager {
         var naming: Naming
         var destination: URL
         var title: String
+        var videoURLs: [String] = []
         var status: Status = .waiting
         /// Прогресс текущего файла, 0…1.
         var progress: Double = 0
@@ -45,7 +46,7 @@ final class DownloadManager {
 
         var isPlaylist: Bool {
             if case .series = naming { return true }
-            return itemCount.map { $0 > 1 } ?? false
+            return !videoURLs.isEmpty || (itemCount.map { $0 > 1 } ?? false)
         }
 
         var subtitle: String {
@@ -89,6 +90,11 @@ final class DownloadManager {
         String(localized: "Сезон \(season)")
     }
 
+    nonisolated static func seriesFolder(_ show: String) -> String {
+        let name = FileRenamer.sanitize(show)
+        return name.isEmpty ? String(localized: "Без названия") : name
+    }
+
     // MARK: - Разбор ссылки
 
     struct Probe {
@@ -96,12 +102,18 @@ final class DownloadManager {
         var itemCount: Int
         var isPlaylist: Bool
         var entries: [String]
+        var videoURLs: [String] = []
+        var season: Int?
     }
 
     /// Спрашивает у yt-dlp, что находится по ссылке, не начиная загрузку.
     /// Нужно, чтобы показать название и понять, плейлист это или одно видео.
     nonisolated static func probe(url: String) async throws -> Probe {
         guard let tool = ExternalTools.ytDLP else { throw DownloadError.toolMissing }
+
+        if let playlist = VKPlaylist(url) {
+            return try await playlist.probe()
+        }
 
         let output = try await runCapturing(tool: tool, arguments: [
             "--dump-single-json",
@@ -126,19 +138,20 @@ final class DownloadManager {
 
     // MARK: - Постановка в очередь
 
-    func enqueue(url: String, naming: Naming, destination: URL, title: String, itemCount: Int?) {
+    func enqueue(url: String, naming: Naming, destination: URL, probe: Probe) {
         var job = Job(url: url,
                       source: VideoSource.detect(url) ?? .other,
                       naming: naming,
                       destination: destination,
-                      title: title)
-        job.itemCount = itemCount
+                      title: probe.title,
+                      videoURLs: probe.videoURLs)
+        job.itemCount = probe.itemCount
         jobs.insert(job, at: 0)
         Task { await run(job.id) }
     }
 
     func cancel(_ id: UUID) {
-        processes[id]?.terminate()
+        if let process = processes[id], process.isRunning { process.terminate() }
         processes[id] = nil
         update(id) { $0.status = .cancelled }
     }
@@ -150,7 +163,7 @@ final class DownloadManager {
     // MARK: - Выполнение
 
     private func run(_ id: UUID) async {
-        guard let job = jobs.first(where: { $0.id == id }) else { return }
+        guard let job = jobs.first(where: { $0.id == id }), job.status == .waiting else { return }
         guard let tool = ExternalTools.ytDLP else {
             update(id) { $0.status = .failed(String(localized: "yt-dlp не найден — установите его через Homebrew")) }
             return
@@ -170,11 +183,20 @@ final class DownloadManager {
 
         // Вывод читаем событиями, а не блокирующим циклом: раньше цикл крутился
         // на главном потоке и подвешивал весь интерфейс до конца загрузки.
-        let errorBox = ErrorBox()
-        let status = await Self.execute(process: process, pipe: pipe) { line in
-            if let message = Self.errorMessage(in: line) { errorBox.set(message) }
-            Task { @MainActor [weak self] in self?.apply(line: line, to: id) }
+        let lines: AsyncStream<String>
+        do {
+            lines = try Self.start(process: process, pipe: pipe)
+        } catch {
+            processes[id] = nil
+            update(id) { $0.status = .failed(error.localizedDescription) }
+            return
         }
+        var errorMessage: String?
+        for await line in lines {
+            errorMessage = Self.errorMessage(in: line) ?? errorMessage
+            apply(line: line, to: id, resolvedPlaylist: !job.videoURLs.isEmpty)
+        }
+        let status = process.terminationStatus
 
         processes[id] = nil
 
@@ -184,49 +206,29 @@ final class DownloadManager {
                 job.status = .finished
                 job.progress = 1
             } else {
-                job.status = .failed(errorBox.value ?? String(localized: "yt-dlp завершился с кодом \(status)"))
+                job.status = .failed(errorMessage ?? String(localized: "yt-dlp завершился с кодом \(status)"))
             }
         }
 
-        if status == 0 { onFinished?() }
+        if status == 0 || jobs.contains(where: { $0.id == id && !$0.downloadedFiles.isEmpty }) { onFinished?() }
     }
 
     /// Запускает процесс и отдаёт его вывод построчно, не блокируя вызывающий поток.
-    private nonisolated static func execute(process: Process,
-                                            pipe: Pipe,
-                                            onLine: @escaping @Sendable (String) -> Void) async -> Int32 {
-        await withCheckedContinuation { continuation in
+    private static func start(process: Process, pipe: Pipe) throws -> AsyncStream<String> {
+        try process.run()
+        let (lines, output) = AsyncStream.makeStream(of: String.self)
+        DispatchQueue.global(qos: .utility).async {
             let handle = pipe.fileHandleForReading
-            let buffer = LineBuffer()
-            let finished = OnceFlag()
-
-            handle.readabilityHandler = { handle in
-                let data = handle.availableData
-                guard !data.isEmpty else { return }
-                for line in buffer.append(String(decoding: data, as: UTF8.self)) {
-                    onLine(line)
-                }
+            var buffer = LineBuffer()
+            while let data = try? handle.read(upToCount: 16_384), !data.isEmpty {
+                for line in buffer.append(data) { output.yield(line) }
             }
+            if let last = buffer.flush() { output.yield(last) }
 
-            process.terminationHandler = { process in
-                handle.readabilityHandler = nil
-                // Забираем хвост, который мог не попасть в события чтения.
-                if let tail = try? handle.readToEnd(), !tail.isEmpty {
-                    for line in buffer.append(String(decoding: tail, as: UTF8.self)) { onLine(line) }
-                }
-                if let last = buffer.flush() { onLine(last) }
-                guard finished.claim() else { return }
-                continuation.resume(returning: process.terminationStatus)
-            }
-
-            do {
-                try process.run()
-            } catch {
-                handle.readabilityHandler = nil
-                guard finished.claim() else { return }
-                continuation.resume(returning: -1)
-            }
+            process.waitUntilExit()
+            output.finish()
         }
+        return lines
     }
 
     /// Аргументы yt-dlp. Шаблон имени задаём сами, чтобы файлы сразу ложились
@@ -241,34 +243,53 @@ final class DownloadManager {
             "-f", "bestvideo*+bestaudio/best",
         ]
 
-        if ExternalTools.ffmpeg != nil {
-            args += ["--merge-output-format", "mp4"]
+        if let ffmpeg = ExternalTools.ffmpeg {
+            args += ["--ffmpeg-location", ffmpeg.path, "--merge-output-format", "mp4"]
+        }
+
+        let resolvedPlaylist = !job.videoURLs.isEmpty
+        if resolvedPlaylist {
+            // Порядок ссылок задаёт номера серий. При ошибке оставляем следующие
+            // серии в очереди yt-dlp незагруженными, чтобы их номера не сдвинулись.
+            args += ["--no-playlist", "--abort-on-error", "--no-simulate", "--progress",
+                     "--print", "before_dl:LUMIERE_VIDEO_START:%(id)s",
+                     "--print", "after_move:LUMIERE_VIDEO_FILE:%(filepath)s"]
         }
 
         switch job.naming {
         case .movie:
-            args += ["--no-playlist", "-o", "%(title)s.%(ext)s"]
+            if !resolvedPlaylist { args.append("--no-playlist") }
+            let template = resolvedPlaylist ? "%(title)s [%(id)s].%(ext)s" : "%(title)s.%(ext)s"
+            args += ["-o", template]
 
         case .series(let show, let season, let startEpisode):
             // autonumber даёт сквозную нумерацию серий с нужного места.
-            let safeShow = FileRenamer.sanitize(show)
+            let safeShow = Self.seriesFolder(show).replacingOccurrences(of: "%", with: "%%")
             let seasonCode = String(format: "%02d", season)
             // Раскладываем по папкам «Сериал / Сезон N»: так содержимое понятно
             // и в Finder, без нашего приложения. yt-dlp создаёт папки сам.
+            if !resolvedPlaylist { args.append("--yes-playlist") }
             args += [
-                "--yes-playlist",
                 "--autonumber-start", String(startEpisode),
                 "-o", "\(safeShow)/\(Self.seasonFolder(season))/\(safeShow) - S\(seasonCode)E%(autonumber)02d.%(ext)s",
             ]
         }
 
-        args.append(job.url)
+        args += resolvedPlaylist ? job.videoURLs : [job.url]
         return args
     }
 
     // MARK: - Разбор вывода
 
-    private func apply(line: String, to id: UUID) {
+    private func apply(line: String, to id: UUID, resolvedPlaylist: Bool) {
+        if resolvedPlaylist, line.hasPrefix("LUMIERE_VIDEO_START:") {
+            update(id) {
+                $0.itemIndex = ($0.itemIndex ?? 0) + 1
+                $0.progress = 0
+                $0.speed = nil
+                $0.eta = nil
+            }
+        }
         // [download]  42.7% of  1.31GiB at  8.42MiB/s ETA 01:12
         if let percent = Self.match(line, #"\[download\]\s+([\d.]+)%"#).flatMap(Double.init) {
             update(id) { $0.progress = percent / 100 }
@@ -289,8 +310,11 @@ final class DownloadManager {
             }
         }
         // [download] Destination: Severance - S02E01.mp4  /  [Merger] Merging formats into "..."
-        if let name = Self.match(line, #"\[download\] Destination:\s+(.+)$"#)
-            ?? Self.match(line, #"Merging formats into "(.+)""#) {
+        let name = resolvedPlaylist
+            ? Self.match(line, #"^LUMIERE_VIDEO_FILE:(.+)$"#)
+            : Self.match(line, #"\[download\] Destination:\s+(.+)$"#)
+                ?? Self.match(line, #"Merging formats into "(.+)""#)
+        if let name {
             let file = (name as NSString).lastPathComponent
             update(id) { job in
                 if !job.downloadedFiles.contains(file) { job.downloadedFiles.append(file) }

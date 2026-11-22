@@ -76,11 +76,16 @@ struct DownloadsView: View {
                 Image(systemName: "link").foregroundStyle(.secondary)
                 TextField("https://vkvideo.ru/… или https://rutube.ru/…", text: $link)
                     .textFieldStyle(.plain)
+                    .disabled(isProbing)
+                    .onChange(of: link) {
+                        probe = nil
+                        probeError = nil
+                    }
                     .onSubmit { runProbe() }
                 if isProbing { ProgressView().controlSize(.small) }
                 Button("Проверить") { runProbe() }
                     .buttonStyle(.glass)
-                    .disabled(link.trimmingCharacters(in: .whitespaces).isEmpty || isProbing)
+                    .disabled(link.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isProbing)
             }
             .padding(.horizontal, 12).padding(.vertical, 10)
             .glassEffect(.regular, in: .rect(cornerRadius: 12))
@@ -133,7 +138,7 @@ struct DownloadsView: View {
                         .frame(width: 150)
                 }
                 Text({
-                    let name = FileRenamer.sanitize(showName.isEmpty ? probe.title : showName)
+                    let name = DownloadManager.seriesFolder(showName.isEmpty ? probe.title : showName)
                     let code = "S\(String(format: "%02d", season))E\(String(format: "%02d", startEpisode))"
                     return String(localized: "Разложим так: «\(name) / \(DownloadManager.seasonFolder(season)) / \(name) - \(code).mp4» — понятно и в Finder, без приложения.")
                 }())
@@ -189,8 +194,8 @@ struct DownloadsView: View {
     // MARK: - Действия
 
     private func runProbe() {
-        let url = link.trimmingCharacters(in: .whitespaces)
-        guard !url.isEmpty else { return }
+        let url = link.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !isProbing, !url.isEmpty else { return }
         isProbing = true
         probeError = nil
         probe = nil
@@ -210,6 +215,15 @@ struct DownloadsView: View {
     /// Прогоняем его через тот же парсер, что разбирает имена файлов, и заполняем форму —
     /// пользователю остаётся только проверить, а не вводить заново.
     private func applyParsedTitle(_ probe: DownloadManager.Probe) {
+        if !probe.videoURLs.isEmpty {
+            let firstVideo = probe.entries.first.map { FilenameParser.parse(fileName: $0 + ".mp4") }
+            kind = .series
+            showName = probe.title
+            season = probe.season ?? firstVideo?.season ?? 1
+            startEpisode = firstVideo?.season == season ? firstVideo?.episode ?? 1 : 1
+            return
+        }
+
         let parsed = FilenameParser.parse(fileName: probe.title)
 
         if parsed.isEpisode {
@@ -238,11 +252,10 @@ struct DownloadsView: View {
                               startEpisode: startEpisode)
         }
 
-        downloads.enqueue(url: link.trimmingCharacters(in: .whitespaces),
+        downloads.enqueue(url: link.trimmingCharacters(in: .whitespacesAndNewlines),
                           naming: naming,
                           destination: destination,
-                          title: probe.title,
-                          itemCount: probe.itemCount)
+                          probe: probe)
         link = ""
         self.probe = nil
     }
